@@ -58,9 +58,11 @@ canvas{display:block;touch-action:none}
 .kill-line{font-family:var(--font-mono);font-size:12px;letter-spacing:2px;color:var(--cyan-soft);background:rgba(6,16,26,.72);border-left:2px solid var(--cyan);padding:5px 12px;animation:kf-in .35s ease-out;text-shadow:0 0 8px rgba(53,230,255,.6);white-space:nowrap}
 .kill-line.wraith{border-color:#b028ff;color:#e0b0ff;text-shadow:0 0 8px rgba(176,40,255,.7)}
 .kill-line.brute{border-color:#ff8c00;color:#ffd28a;text-shadow:0 0 8px rgba(255,140,0,.7)}
+.kill-line.boss{border-color:#ff3355;color:#ffb0c0;background:rgba(26,6,10,.85);text-shadow:0 0 14px rgba(255,51,85,.9);animation:kf-in .35s ease-out, kf-glow-red .9s ease-out}
 .kill-line.multikill{border-color:var(--magenta);color:#ffb0ec;background:rgba(26,6,20,.75);animation:kf-in .35s ease-out, kf-glow .8s ease-out}
 @keyframes kf-in{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
 @keyframes kf-glow{0%{box-shadow:0 0 0 rgba(255,43,214,0)}40%{box-shadow:0 0 24px rgba(255,43,214,.9)}100%{box-shadow:0 0 0 rgba(255,43,214,0)}}
+@keyframes kf-glow-red{0%{box-shadow:0 0 0 rgba(255,51,85,0)}40%{box-shadow:0 0 26px rgba(255,51,85,1)}100%{box-shadow:0 0 0 rgba(255,51,85,0)}}
 
 .panel{position:absolute;font-family:var(--font-mono)}
 .top-left{top:26px;left:34px}
@@ -69,6 +71,19 @@ canvas{display:block;touch-action:none}
 .top-right .big{color:var(--cyan-soft)}
 .panel .row{font-size:11px;letter-spacing:4px;opacity:.65;margin-top:6px}
 .panel .row.dim{opacity:.42;font-size:10px;letter-spacing:2px}
+
+/* Boss health bar */
+.boss-bar{position:absolute;left:50%;top:64px;transform:translateX(-50%);width:min(520px, 70vw);pointer-events:none}
+.boss-bar .lbl{font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:8px;color:#ff5c78;text-align:center;margin-bottom:6px;text-shadow:0 0 18px rgba(255,51,85,.95)}
+.boss-bar .track{height:10px;background:rgba(40,6,12,.85);border:1px solid rgba(255,90,120,.55);overflow:hidden}
+.boss-bar .fill{height:100%;background:linear-gradient(90deg,#ff3355,#ff8c00);box-shadow:0 0 22px rgba(255,51,85,.95);transition:width .2s ease-out}
+
+/* Boost indicator */
+.boost-row{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);display:flex;gap:12px;pointer-events:none}
+.boost-pill{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;padding:5px 14px;background:rgba(6,16,26,.8);border:1px solid currentColor;border-radius:2px;animation:bp-pulse 1s ease-in-out infinite}
+.boost-pill.dmg{color:#ffcc22;box-shadow:0 0 14px rgba(255,204,34,.5)}
+.boost-pill.spd{color:#ff2bd6;box-shadow:0 0 14px rgba(255,43,214,.5)}
+@keyframes bp-pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 .health{position:absolute;left:34px;bottom:32px;width:280px}
 .health .label{font-family:var(--font-mono);font-size:11px;letter-spacing:4px;opacity:.65;margin-bottom:7px}
@@ -87,11 +102,19 @@ canvas{display:block;touch-action:none}
 .ammo .reloading.dim{color:rgba(180,230,255,.45);text-shadow:none}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
+.wpn-slots{position:absolute;right:34px;bottom:105px;display:flex;gap:8px;flex-direction:column;align-items:flex-end}
+.wpn-slot{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;padding:4px 12px;background:rgba(6,16,26,.6);border:1px solid rgba(53,230,255,.25);color:rgba(180,230,255,.5)}
+.wpn-slot.active{color:var(--cyan-soft);border-color:var(--cyan);box-shadow:0 0 12px rgba(53,230,255,.7);background:rgba(53,230,255,.12)}
+
 .pickup-toast{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);font-family:var(--font-mono);font-size:14px;letter-spacing:4px;color:var(--green);text-shadow:0 0 14px rgba(34,255,136,.9);animation:toastup 1.2s ease-out forwards;pointer-events:none}
 .pickup-toast.ammo{color:var(--cyan);text-shadow:0 0 14px rgba(53,230,255,.9)}
+.pickup-toast.damage{color:#ffcc22;text-shadow:0 0 14px rgba(255,204,34,.9)}
+.pickup-toast.speed{color:#ff2bd6;text-shadow:0 0 14px rgba(255,43,214,.9)}
 @keyframes toastup{0%{opacity:0;transform:translate(-50%,20px)}20%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
 
-.wave-banner{position:absolute;left:50%;top:22%;transform:translateX(-50%);font-size:42px;font-weight:900;letter-spacing:14px;color:var(--magenta);text-shadow:0 0 26px rgba(255,43,214,.9),0 0 60px rgba(255,43,214,.5);animation:wavein 2.4s ease-out forwards;pointer-events:none}
+.wave-banner{position:absolute;left:50%;top:22%;transform:translateX(-50%);font-size:42px;font-weight:900;letter-spacing:14px;color:var(--magenta);text-shadow:0 0 26px rgba(255,43,214,.9),0 0 60px rgba(255,43,214,.5);animation:wavein 2.4s ease-out forwards;pointer-events:none;text-align:center}
+.wave-banner .sub{display:block;font-size:14px;letter-spacing:8px;margin-top:8px;opacity:.75}
+.wave-banner.boss-wave{color:#ff5c78;text-shadow:0 0 30px rgba(255,51,85,1),0 0 70px rgba(255,51,85,.6)}
 @keyframes wavein{0%{opacity:0;transform:translateX(-50%) scale(1.4)}15%{opacity:1;transform:translateX(-50%) scale(1)}70%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(.98)}}
 
 .damage-flash{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,0,40,0) 30%,rgba(255,0,40,.62) 100%);animation:dmgfade .55s ease-out forwards;pointer-events:none}
@@ -100,6 +123,7 @@ canvas{display:block;touch-action:none}
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.85}}
 
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;pointer-events:auto;background:radial-gradient(ellipse at 50% 40%,rgba(10,40,70,.55) 0%,rgba(3,5,12,.94) 70%),rgba(3,5,12,.82);backdrop-filter:blur(3px);animation:screenin .35s ease-out}
+.screen.soft{background:radial-gradient(ellipse at 50% 40%,rgba(10,40,70,.35) 0%,rgba(3,5,12,.72) 70%),rgba(3,5,12,.55)}
 @keyframes screenin{from{opacity:0}to{opacity:1}}
 .scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(120,220,255,.045) 0px,rgba(120,220,255,.045) 1px,transparent 1px,transparent 3px);mix-blend-mode:overlay}
 .title{margin:0;font-size:clamp(42px,8vw,96px);font-weight:900;letter-spacing:12px;color:var(--cyan-soft);text-shadow:0 0 28px rgba(53,230,255,.85),0 0 80px rgba(53,230,255,.45);animation:title-pulse 3.4s ease-in-out infinite}
@@ -120,12 +144,29 @@ canvas{display:block;touch-action:none}
 .btn{pointer-events:auto;cursor:pointer;font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:7px;color:var(--cyan-soft);padding:16px 62px;border:1px solid var(--cyan);background:rgba(53,230,255,.07);transition:all .16s ease;text-transform:uppercase}
 .btn:hover{background:var(--cyan);color:#04121a;box-shadow:0 0 34px rgba(53,230,255,.85);letter-spacing:9px}
 .btn:active{transform:translateY(1px)}
+.btn.small{font-size:12px;padding:10px 34px;letter-spacing:4px}
 .btn.ghost{font-size:12px;padding:10px 34px;letter-spacing:4px;border-color:rgba(53,230,255,.35);background:transparent;color:rgba(180,235,255,.7)}
 .btn.ghost:hover{background:rgba(53,230,255,.14);color:var(--cyan-soft);box-shadow:none;letter-spacing:5px}
+.btn-row{display:flex;gap:14px}
 .hint{position:absolute;bottom:34px;margin:0;font-family:var(--font-mono);font-size:11px;letter-spacing:3px;opacity:.35}
 .err{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:40px;background:#0a0206;color:#ff8fa3;font-family:var(--font-mono);font-size:13px;line-height:1.7;white-space:pre-wrap;overflow:auto;text-align:center}
 
 .fps-meter{position:absolute;left:34px;top:26px;font-family:var(--font-mono);font-size:10px;letter-spacing:2px;opacity:.35;color:var(--cyan-soft)}
+
+/* ---------- Settings panel ---------- */
+.settings-panel{width:min(560px, 88vw);background:rgba(6,16,26,.85);border:1px solid rgba(53,230,255,.35);padding:26px 32px;display:flex;flex-direction:column;gap:16px;box-shadow:0 0 60px rgba(53,230,255,.15)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.setting-row .lbl{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;color:var(--cyan-soft);opacity:.85}
+.setting-row .val{font-family:var(--font-mono);font-size:12px;color:#fff;min-width:70px;text-align:right}
+.setting-slider{flex:1;display:flex;align-items:center;gap:14px;min-width:0}
+.setting-slider input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:rgba(53,230,255,.2);outline:none;cursor:pointer;border-radius:2px}
+.setting-slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--cyan);box-shadow:0 0 10px var(--cyan);border-radius:50%;cursor:pointer}
+.setting-slider input[type=range]::-moz-range-thumb{width:16px;height:16px;background:var(--cyan);box-shadow:0 0 10px var(--cyan);border-radius:50%;cursor:pointer;border:none}
+.seg{display:flex;gap:0;border:1px solid rgba(53,230,255,.35)}
+.seg button{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;padding:7px 14px;background:transparent;color:rgba(180,235,255,.6);border:none;cursor:pointer;border-right:1px solid rgba(53,230,255,.2)}
+.seg button:last-child{border-right:none}
+.seg button.active{background:var(--cyan);color:#04121a;text-shadow:none}
+.seg button:hover:not(.active){background:rgba(53,230,255,.15);color:var(--cyan-soft)}
 
 @media (max-width:760px){
   .controls{grid-template-columns:1fr;gap:6px}
@@ -135,7 +176,6 @@ canvas{display:block;touch-action:none}
   .kill-feed{top:100px;font-size:10px}
 }
 </style>
-
 
 <script type="importmap">
 {
@@ -148,8 +188,6 @@ canvas{display:block;touch-action:none}
     "three": "https://esm.sh/three@0.160.0",
     "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/",
     "three/examples/jsm/": "https://esm.sh/three@0.160.0/examples/jsm/",
-    "opentype.js": "https://esm.sh/opentype.js@1.3.4",
-    "https://esm.sh/opentype.js@^1.3.3?target=es2022": "https://esm.sh/opentype.js@1.3.4",
     "playroomkit": "https://esm.sh/playroomkit@0.0.86?external=react,react-dom",
     "zustand": "https://esm.sh/zustand@4.5.2?external=react",
     "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.16.8?external=react,react-dom,three",
@@ -175,7 +213,6 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   Physics, RigidBody, CuboidCollider, CapsuleCollider, BallCollider, useRapier,
 } from '@react-three/rapier';
-
 import { insertCoin, myPlayer, usePlayersList, isHost, getState, setState } from 'playroomkit';
 
 /* ==================================================================
@@ -196,51 +233,86 @@ const RELOAD_TIME = 1.35;
 const ENEMY_TOUCH_RADIUS = 1.35;
 const WAVE_DURATION = 22;
 const COMBO_TIMEOUT = 3.2;
+const SNAPSHOT_HZ = 12;             // host publishes enemy state this often
+const SNAPSHOT_INTERVAL = 1 / SNAPSHOT_HZ;
 
+/* ---------- Weapons ------------------------------------------------- */
 const WEAPONS = [
-  { name: 'SMG', damage: 25, interval: 0.095, mag: 30, spread: 0.018, range: 250, projectiles: 1 },
-  { name: 'SHOTGUN', damage: 18, interval: 0.85, mag: 6, spread: 0.085, range: 60, projectiles: 8, kick: 2.2 },
-  { name: 'RAILGUN', damage: 6, interval: 0.05, mag: 60, spread: 0, range: 120, projectiles: 1, beam: true, kick: 0.15, reload: 3.0 }
+  { name: 'SMG',      damage: 25, interval: 0.095, mag: 30, spread: 0.018, range: 250, projectiles: 1 },
+  { name: 'SHOTGUN',  damage: 20, interval: 0.85,  mag: 6,  spread: 0.095, range: 60,  projectiles: 10, kick: 2.6, reload: 1.6 },
+  { name: 'RAILGUN',  damage: 7,  interval: 0.055, mag: 60, spread: 0,     range: 140, projectiles: 1,  beam: true, kick: 0.35, reload: 2.6 },
 ];
 
-const MAX_ENEMIES = 22;               
-const SPAWN_MIN_INTERVAL = 0.42;      
-const STARFIELD_COUNT = 380;          
-const FLOOR_PULSE_COUNT = 2;          
-const DAMAGE_NUMBER_CAP = 14;         
+/* Per-weapon visual profile — used to drive FX intensity. */
+const WEAPON_VISUALS = {
+  0: { tracerColor: '#8df6ff', tracerW: 0.03,  glowW: 0.09, shake: 0.032, fovKick: 1.6, recoil: 1.0, flash: 1.0 },
+  1: { tracerColor: '#ffcc44', tracerW: 0.055, glowW: 0.22, shake: 0.16,  fovKick: 7.5, recoil: 2.6, flash: 2.4, orange: true },
+  2: { tracerColor: '#ffffff', tracerW: 0.045, glowW: 0.28, shake: 0.018, fovKick: 1.2, recoil: 0.35, flash: 1.5 },
+};
 
+/* ---------- Enemies ------------------------------------------------- */
 const ENEMY_DEFS = {
   drone: {
     label: 'DRONE', hp: 20, speed: 6.8, damage: 12, score: 100,
-    size: 0.5, emissive: '#ff2b4a', wire: '#ff6b8a', lightColor: '#ff2244',
-    shape: 'octa', kfClass: '',
+    size: 0.5, emissive: '#ff2b4a', wire: '#ff6b8a', shape: 'octa', kfClass: '',
   },
   wraith: {
     label: 'WRAITH', hp: 32, speed: 8.4, damage: 15, score: 175,
-    size: 0.55, emissive: '#b028ff', wire: '#e080ff', lightColor: '#c840ff',
-    shape: 'dodeca', kfClass: 'wraith',
+    size: 0.55, emissive: '#b028ff', wire: '#e080ff', shape: 'dodeca', kfClass: 'wraith',
   },
   brute: {
     label: 'BRUTE', hp: 75, speed: 3.9, damage: 24, score: 275,
-    size: 0.9, emissive: '#ff9a1a', wire: '#ffcc66', lightColor: '#ffaa22',
-    shape: 'box', kfClass: 'brute',
+    size: 0.9, emissive: '#ff9a1a', wire: '#ffcc66', shape: 'box', kfClass: 'brute',
+  },
+  boss: {
+    label: 'BOSS', hp: 500, speed: 2.8, damage: 40, score: 2500,
+    size: 2.0, emissive: '#ff3355', wire: '#ffb0c0', shape: 'boss', kfClass: 'boss',
   },
 };
 
 function enemyStats(type, wave) {
   const base = ENEMY_DEFS[type];
+  const hpMult = type === 'boss' ? 1 + (wave - 1) * 0.22 : 1 + (wave - 1) * 0.13;
+  const hp = Math.round(base.hp * hpMult);
   return {
-    hp: Math.round(base.hp * (1 + (wave - 1) * 0.13)),
+    hp, maxHp: hp,
     speed: Math.min(14, base.speed * (1 + (wave - 1) * 0.04)),
-    damage: base.damage,
-    score: base.score,
+    damage: base.damage, score: base.score,
   };
 }
 
+/* ---------- Pickups ------------------------------------------------- */
 const PICKUP_DEFS = {
   health: { color: '#22ff88', wire: '#9dffcb', amount: 25, label: '+ INTEGRITY' },
-  ammo:   { color: '#35e6ff', wire: '#b6f6ff', amount: 20, label: '+ PLASMA' },
+  ammo:   { color: '#35e6ff', wire: '#b6f6ff', amount: 25, label: '+ PLASMA' },
+  damage: { color: '#ffcc22', wire: '#ffee88', duration: 12, label: 'DAMAGE BOOST', kind: 'damage' },
+  speed:  { color: '#ff2bd6', wire: '#ffb0ec', duration: 8,  label: 'HASTE',        kind: 'speed' },
 };
+
+/* ==================================================================
+ *  SETTINGS (persisted to localStorage)
+ * ================================================================== */
+const SETTINGS_KEY = 'neon-swarm-settings-v3';
+const DEFAULT_SETTINGS = {
+  sensitivity: 1.0,
+  fov: 78,
+  quality: 'high',
+  screenShake: true,
+  showFps: true,
+};
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return { ...DEFAULT_SETTINGS, ...(raw ? JSON.parse(raw) : {}) };
+  } catch { return { ...DEFAULT_SETTINGS }; }
+}
+function saveSettings(s) {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch {}
+}
+const useSettings = create((set, get) => ({
+  ...loadSettings(),
+  update: (patch) => { set(patch); saveSettings(get()); },
+}));
 
 /* ==================================================================
  *  REGISTRY
@@ -250,100 +322,30 @@ const playerState = {
   forward: new THREE.Vector3(0, 0, -1),
   speed: 0,
   alive: true,
+  invuln: false,
 };
 
 const enemiesByBody = new Map();
 const clearRegistry = () => enemiesByBody.clear();
 
-const screenFX = { shake: 0, fovKick: 0, chroma: 0 };
-const addShake = (amount) => { screenFX.shake = Math.min(0.8, screenFX.shake + amount); };
-
-let spawnSeq = Date.now();
-
-/* ---------- SYNTH AUDIO (no asset files) ---------- */
-let AC = null, master = null, noiseBuf = null, beamNodes = null;
-function ensureAudio() {
-  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
-  try {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-    const comp = AC.createDynamicsCompressor();
-    master = AC.createGain(); master.gain.value = 0.6;
-    master.connect(comp); comp.connect(AC.destination);
-    noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
-    const d = noiseBuf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  } catch { AC = null; }
-}
-window.addEventListener('pointerdown', ensureAudio);
-window.addEventListener('keydown', ensureAudio);
-function tone(type, f0, f1, dur, vol, delay = 0) {
-  if (!AC) return;
-  const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
-  o.type = type; o.frequency.setValueAtTime(f0, t);
-  o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
-}
-function noise(dur, vol, f0, f1, type = 'bandpass', delay = 0, q = 1) {
-  if (!AC) return;
-  const t = AC.currentTime + delay, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
-  s.buffer = noiseBuf; s.playbackRate.value = 0.8 + Math.random() * 0.4;
-  f.type = type; f.Q.value = q;
-  f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.02);
-}
-const SFX = {
-  shot0: () => { noise(0.07, 0.7, 2600, 900, 'bandpass', 0, 0.8); tone('square', 330 + Math.random() * 40, 70, 0.09, 0.35); tone('sine', 150, 45, 0.12, 0.6); },
-  shot1: () => { noise(0.38, 1.1, 1500, 110, 'lowpass'); tone('sine', 110, 26, 0.4, 1.0); tone('sawtooth', 220, 40, 0.22, 0.4);
-                 noise(0.05, 0.5, 3200, 3200, 'highpass', 0.34); tone('square', 900, 500, 0.04, 0.25, 0.35); tone('square', 500, 300, 0.05, 0.3, 0.42); },
-  hit:   () => tone('sine', 1500, 1100, 0.05, 0.28),
-  kill:  () => { tone('sine', 900, 1900, 0.09, 0.32); tone('triangle', 1300, 2600, 0.12, 0.22, 0.05); tone('sine', 90, 40, 0.22, 0.55); },
-  boom:  () => { noise(0.45, 0.7, 1800, 80, 'lowpass'); tone('sine', 120, 30, 0.45, 0.7); },
-  hurt:  () => { tone('sawtooth', 170, 50, 0.3, 0.6); noise(0.25, 0.7, 900, 150, 'lowpass'); },
-  dash:  () => { noise(0.3, 0.9, 300, 5500, 'bandpass', 0, 1.2); tone('sine', 180, 800, 0.22, 0.25); tone('sine', 70, 40, 0.25, 0.6); },
-  slide: () => { noise(0.7, 0.55, 2600, 450, 'bandpass', 0, 0.7); tone('sine', 95, 55, 0.35, 0.4); },
-  reload:() => { tone('square', 700, 400, 0.04, 0.22); tone('square', 350, 520, 0.05, 0.22, 0.6); noise(0.06, 0.4, 3000, 1500, 'bandpass', 0.95); },
-  pickup:() => { tone('sine', 660, 660, 0.08, 0.28); tone('sine', 990, 990, 0.1, 0.28, 0.07); tone('sine', 1320, 1320, 0.16, 0.28, 0.14); },
+const screenFX = { shake: 0, fovKick: 0 };
+const addShake = (amount) => {
+  if (!useSettings.getState().screenShake) return;
+  screenFX.shake = Math.min(1.2, screenFX.shake + amount);
 };
-function sfx(n) { if (!AC) return; try { SFX[n] && SFX[n](); } catch {} }
-function beamSound(on) {
-  if (!AC) return;
-  if (on && !beamNodes) {
-    const g = AC.createGain(); g.gain.value = 0; g.gain.linearRampToValueAtTime(0.55, AC.currentTime + 0.06);
-    const o1 = AC.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = 70;
-    const o2 = AC.createOscillator(); o2.type = 'square'; o2.frequency.value = 141;
-    const lfo = AC.createOscillator(); lfo.frequency.value = 38;
-    const lg = AC.createGain(); lg.gain.value = 40; lfo.connect(lg); lg.connect(o2.frequency);
-    const n = AC.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
-    const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 3500; f.Q.value = 0.6;
-    const ng = AC.createGain(); ng.gain.value = 0.5;
-    n.connect(f); f.connect(ng); ng.connect(g); o1.connect(g); o2.connect(g); g.connect(master);
-    const all = [o1, o2, lfo, n]; all.forEach((x) => x.start());
-    beamNodes = { g, all };
-    tone('sawtooth', 100, 1400, 0.15, 0.45);
-  } else if (!on && beamNodes) {
-    const b = beamNodes; beamNodes = null;
-    const t = AC.currentTime;
-    b.g.gain.cancelScheduledValues(t); b.g.gain.setValueAtTime(b.g.gain.value, t); b.g.gain.linearRampToValueAtTime(0, t + 0.12);
-    b.all.forEach((x) => x.stop(t + 0.15));
-  }
-}
 
 /* ==================================================================
  *  INPUT
  * ================================================================== */
-const keys = { forward:false, back:false, left:false, right:false, jump:false, sprint:false, slide:false, dash:false, slidePress:false };
+const keys = { forward:false, back:false, left:false, right:false, jump:false, sprint:false, dash:false, slide:false, slidePress:false };
 const mouse = { left:false, right:false };
 const look = { dx:0, dy:0 };
-
 function resetInput() {
   keys.forward = keys.back = keys.left = keys.right = false;
-  keys.jump = keys.sprint = keys.slide = keys.dash = keys.slidePress = false;
+  keys.jump = keys.sprint = keys.dash = keys.slide = keys.slidePress = false;
   mouse.left = mouse.right = false;
   look.dx = look.dy = 0;
 }
-
 function requestGamePointerLock(retries = 4) {
   const canvas = document.querySelector('canvas');
   if (!canvas) return;
@@ -369,42 +371,44 @@ const nextId = () => ++uid;
 const useGame = create((set, get) => ({
   status: 'MENU',
   health: 100, maxHealth: 100,
-  activeWeapon: 0, ammoBy: WEAPONS.map((w) => w.mag),
+  activeWeapon: 0,
   ammo: WEAPONS[0].mag, magSize: WEAPONS[0].mag,
   reloading: false, ads: false,
   score: 0, kills: 0, wave: 1,
   combo: 0, comboTier: 0,
   enemies: [], tracers: [], explosions: [], pickups: [],
   damageNumbers: [], killFeed: [],
-  hitMarker: null,
-  damageStamp: 0,
-  pickupToast: null,
-  streakFlash: null,
+  hitMarker: null, damageStamp: 0,
+  pickupToast: null, streakFlash: null,
+  damageBoostUntil: 0,
+  speedBoostUntil: 0,
+  bossEnemyId: null,
   startedAt: 0, endedAt: 0,
 
   startGame: () => {
     clearRegistry(); resetInput();
     const me = myPlayer();
     if (me) {
-      me.setState('kills', [], true);
-      me.setState('pickups', [], true);
+      me.setState('dmgOut', [], true);
+      me.setState('pickupOut', [], true);
       me.setState('lastHit', null, true);
       me.setState('dead', false, true);
     }
-    screenFX.shake = 0; screenFX.fovKick = 0; screenFX.chroma = 0;
+    screenFX.shake = 0; screenFX.fovKick = 0;
     set({
       status: 'PLAYING',
-      health: 100, activeWeapon: 0, ammoBy: WEAPONS.map((w) => w.mag), ammo: WEAPONS[0].mag, magSize: WEAPONS[0].mag, reloading: false, ads: false,
+      health: 100, activeWeapon: 0, ammo: WEAPONS[0].mag, magSize: WEAPONS[0].mag, reloading: false, ads: false,
       score: 0, kills: 0, wave: 1, combo: 0, comboTier: 0,
       enemies: [], tracers: [], explosions: [], pickups: [],
       damageNumbers: [], killFeed: [],
       hitMarker: null, damageStamp: 0, pickupToast: null, streakFlash: null,
+      damageBoostUntil: 0, speedBoostUntil: 0, bossEnemyId: null,
       startedAt: performance.now(), endedAt: 0,
     });
   },
 
-  pauseGame: () => { if (get().status !== 'PLAYING') return; resetInput(); set({ status: 'PAUSED', ads: false }); },
-  resumeGame: () => { if (get().status !== 'PAUSED') return; set({ status: 'PLAYING' }); },
+  /* Soft pause: local UI overlay only. Game continues to run. */
+  softPause: () => { if (get().status !== 'PLAYING') return; resetInput(); set({ ads: false }); },
   backToMenu: () => {
     clearRegistry(); resetInput();
     set({ status: 'MENU', enemies: [], tracers: [], explosions: [], pickups: [], damageNumbers: [], killFeed: [], ads: false });
@@ -412,8 +416,7 @@ const useGame = create((set, get) => ({
 
   switchWeapon: (index) => set((s) => {
     if (s.activeWeapon === index) return {};
-    const ammoBy = [...s.ammoBy]; ammoBy[s.activeWeapon] = s.ammo;
-    return { ammoBy, activeWeapon: index, ammo: ammoBy[index], magSize: WEAPONS[index].mag, reloading: false };
+    return { activeWeapon: index, ammo: WEAPONS[index].mag, magSize: WEAPONS[index].mag, reloading: false };
   }),
 
   damagePlayer: (amount) => {
@@ -421,8 +424,7 @@ const useGame = create((set, get) => ({
     if (s.status !== 'PLAYING' || playerState.invuln) return;
     const health = Math.max(0, s.health - amount);
     set({ health, damageStamp: nextId() });
-    addShake(0.16); sfx('hurt');
-    screenFX.chroma = Math.min(1.5, screenFX.chroma + 0.6);
+    addShake(0.16);
     if (health <= 0) {
       set({ status: 'GAME_OVER', endedAt: performance.now(), ads: false });
       const me = myPlayer();
@@ -435,9 +437,10 @@ const useGame = create((set, get) => ({
   setReloading: (v) => set({ reloading: v }),
   finishReload: () => set({ ammo: get().magSize, reloading: false }),
   setADS: (v) => set({ ads: v }),
-
   heal: (amount) => set((s) => ({ health: Math.min(s.maxHealth, s.health + amount) })),
   giveAmmo: (amount) => set((s) => ({ ammo: Math.min(s.magSize, s.ammo + amount) })),
+  grantDamageBoost: (dur) => set({ damageBoostUntil: performance.now() + dur * 1000 }),
+  grantSpeedBoost: (dur) => set({ speedBoostUntil: performance.now() + dur * 1000 }),
 
   registerHit: (kill) => set({ hitMarker: { id: nextId(), kill } }),
 
@@ -453,43 +456,37 @@ const useGame = create((set, get) => ({
       kfClass: nextCombo >= 5 ? 'multikill' : def.kfClass,
     };
     const feed = [...s.killFeed, feedEntry].slice(-5);
-    set({
-      combo: nextCombo, comboTier: tier,
-      score: s.score + gained, kills: s.kills + 1, killFeed: feed,
-    });
-    if (nextCombo > 1 && nextCombo % 5 === 0) {
-      set({ streakFlash: { id: nextId(), value: nextCombo, tier } });
-    }
+    set({ combo: nextCombo, comboTier: tier, score: s.score + gained, kills: s.kills + 1, killFeed: feed });
+    if (nextCombo > 1 && nextCombo % 5 === 0) set({ streakFlash: { id: nextId(), value: nextCombo, tier } });
   },
 
   resetCombo: () => { if (get().combo !== 0) set({ combo: 0, comboTier: 0 }); },
   nextWave: () => set((s) => ({ wave: s.wave + 1 })),
 
-  spawnEnemy: (position, type, stats) => set((s) => {
-    const id = stats.id ?? nextId();
-    if (s.enemies.some((e) => e.id === id)) return {};   // never spawn the same enemy twice
-    return { enemies: [...s.enemies, { position, type, ...stats, id }] };
+  /* Host-authoritative enemy list. */
+  setEnemies: (list) => set({ enemies: list }),
+  spawnEnemy: (enemy) => set((s) => {
+    if (s.enemies.some((e) => e.id === enemy.id)) return {};
+    return { enemies: [...s.enemies, enemy] };
   }),
   removeEnemy: (id) => set((s) => ({ enemies: s.enemies.filter((e) => e.id !== id) })),
 
-  spawnPickup: (position, type) =>
-    set((s) => ({ pickups: [...s.pickups, { id: 'p' + Math.random().toString(36).slice(2, 8), ph: Math.random() * 6, position, type }] })),
+  spawnPickup: (position, type, id) =>
+    set((s) => ({ pickups: [...s.pickups, { id: id || 'p' + Math.random().toString(36).slice(2, 8), ph: Math.random() * 6, position, type }] })),
   removePickup: (id) => set((s) => ({ pickups: s.pickups.filter((p) => p.id !== id) })),
 
   showPickupToast: (label, kind) => set({ pickupToast: { id: nextId(), label, kind } }),
 
-  addTracer: (from, to, beam) =>
-    set((s) => ({ tracers: [...s.tracers.slice(-40), { id: nextId(), from, to, beam: !!beam }] })),
+  addTracer: (from, to, beam, color) =>
+    set((s) => ({ tracers: [...s.tracers.slice(-60), { id: nextId(), from, to, beam: !!beam, color }] })),
   removeTracer: (id) => set((s) => ({ tracers: s.tracers.filter((t) => t.id !== id) })),
 
   addExplosion: (position, color, size, ring) =>
-    set((s) => ({ explosions: [...s.explosions.slice(-30), { id: nextId(), position, color, size, ring: !!ring }] })),
+    set((s) => ({ explosions: [...s.explosions.slice(-40), { id: nextId(), position, color, size, ring: !!ring }] })),
   removeExplosion: (id) => set((s) => ({ explosions: s.explosions.filter((e) => e.id !== id) })),
 
   addDamageNumber: (position, text, color) =>
-    set((s) => ({
-      damageNumbers: [...s.damageNumbers.slice(-(DAMAGE_NUMBER_CAP - 1)), { id: nextId(), position, text, color }],
-    })),
+    set((s) => ({ damageNumbers: [...s.damageNumbers.slice(-13), { id: nextId(), position, text, color }] })),
   removeDamageNumber: (id) =>
     set((s) => ({ damageNumbers: s.damageNumbers.filter((d) => d.id !== id) })),
 }));
@@ -517,14 +514,12 @@ const PILLARS = [
   { pos: [-14, 1.6, 0], size: [1.0, 1.6, 1.0] },
   { pos: [14, 1.6, 0], size: [1.0, 1.6, 1.0] },
 ];
-
 const RAMPS = [
   { pos: [-35, 1.6, -21], rot: [0, 0, -0.3], size: [6, 0.45, 4] },
   { pos: [35, 1.6, 21], rot: [0, 0, -0.3], size: [6, 0.45, 4] },
   { pos: [-22, 1.6, 35], rot: [0.3, 0, 0], size: [4, 0.45, 6] },
   { pos: [22, 1.6, -35], rot: [0.3, 0, 0], size: [4, 0.45, 6] },
 ];
-
 const WALLS = [
   { pos: [0, WALL_HEIGHT / 2, -ARENA_HALF], half: [ARENA_HALF + 1, WALL_HEIGHT / 2, 0.5] },
   { pos: [0, WALL_HEIGHT / 2, ARENA_HALF], half: [ARENA_HALF + 1, WALL_HEIGHT / 2, 0.5] },
@@ -543,25 +538,15 @@ function Wall({ pos, half, index }) {
   return (
     <RigidBody type="fixed" colliders={false} position={pos} friction={0.4}>
       <CuboidCollider args={half} />
-      <mesh>
-        <boxGeometry args={[half[0] * 2, half[1] * 2, half[2] * 2]} />
-        <meshStandardMaterial color="#070d18" metalness={0.85} roughness={0.35} emissive="#0a2a44" emissiveIntensity={0.6} />
-      </mesh>
-      <mesh ref={topRef} position={[0, half[1] - 0.35, 0]}>
-        <boxGeometry args={[half[0] * 2 * 0.98, 0.14, half[2] * 2 * 1.06]} />
-        <meshBasicMaterial color="#2fe0ff" toneMapped={false} transparent />
-      </mesh>
-      <mesh ref={botRef} position={[0, -half[1] + 0.25, 0]}>
-        <boxGeometry args={[half[0] * 2 * 0.98, 0.1, half[2] * 2 * 1.06]} />
-        <meshBasicMaterial color="#ff2bd6" toneMapped={false} transparent />
-      </mesh>
+      <mesh><boxGeometry args={[half[0] * 2, half[1] * 2, half[2] * 2]} /><meshStandardMaterial color="#070d18" metalness={0.85} roughness={0.35} emissive="#0a2a44" emissiveIntensity={0.6} /></mesh>
+      <mesh ref={topRef} position={[0, half[1] - 0.35, 0]}><boxGeometry args={[half[0] * 2 * 0.98, 0.14, half[2] * 2 * 1.06]} /><meshBasicMaterial color="#2fe0ff" toneMapped={false} transparent /></mesh>
+      <mesh ref={botRef} position={[0, -half[1] + 0.25, 0]}><boxGeometry args={[half[0] * 2 * 0.98, 0.1, half[2] * 2 * 1.06]} /><meshBasicMaterial color="#ff2bd6" toneMapped={false} transparent /></mesh>
     </RigidBody>
   );
 }
 
-function Starfield() {
+function Starfield({ count }) {
   const { positions, colors } = useMemo(() => {
-    const count = STARFIELD_COUNT;
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     const palette = [new THREE.Color('#35e6ff'), new THREE.Color('#ff2bd6'), new THREE.Color('#ffffff'), new THREE.Color('#b028ff')];
@@ -576,13 +561,9 @@ function Starfield() {
       col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
     }
     return { positions: pos, colors: col };
-  }, []);
-
+  }, [count]);
   const ref = useRef(null);
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += dt * 0.008;
-  });
-
+  useFrame((_, dt) => { if (ref.current) ref.current.rotation.y += dt * 0.008; });
   return (
     <points ref={ref}>
       <bufferGeometry>
@@ -608,7 +589,7 @@ function FloorPulses() {
   });
   return (
     <group position={[0, 0.02, 0]}>
-      {Array.from({ length: FLOOR_PULSE_COUNT }).map((_, i) => (
+      {[0, 1].map((i) => (
         <mesh key={i} ref={(el) => (refs.current[i] = el)} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.98, 1, 32]} />
           <meshBasicMaterial color="#2fe0ff" transparent opacity={0.12} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
@@ -619,57 +600,40 @@ function FloorPulses() {
 }
 
 function Arena() {
+  const quality = useSettings((s) => s.quality);
+  const stars = quality === 'low' ? 120 : quality === 'medium' ? 240 : 380;
   return (
     <group>
       <RigidBody type="fixed" colliders={false} position={[0, -0.5, 0]}>
         <CuboidCollider args={[ARENA_HALF + 4, 0.5, ARENA_HALF + 4]} />
       </RigidBody>
-
       <mesh scale={[-1, 1, 1]}>
         <sphereGeometry args={[340, 16, 12]} />
         <meshBasicMaterial color="#02030a" side={THREE.BackSide} depthWrite={false} />
       </mesh>
-      <Starfield />
-
+      <Starfield count={stars} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
         <planeGeometry args={[400, 400]} />
         <meshStandardMaterial color="#04060c" metalness={0.7} roughness={0.45} />
       </mesh>
       <gridHelper args={[400, 100, '#0d3f5c', '#0a2c42']} position={[0, 0.005, 0]} />
       <gridHelper args={[160, 40, '#18b9e8', '#0d4a6b']} position={[0, 0.012, 0]} />
-
       <FloorPulses />
-
       {WALLS.map((w, i) => <Wall key={i} pos={w.pos} half={w.half} index={i} />)}
-
       {PILLARS.map((p, i) => (
         <RigidBody key={i} type="fixed" colliders={false} position={p.pos}>
           <CuboidCollider args={p.size} />
-          <mesh>
-            <boxGeometry args={[p.size[0] * 2, p.size[1] * 2, p.size[2] * 2]} />
-            <meshStandardMaterial color="#0a1220" metalness={0.9} roughness={0.3} emissive="#123a55" emissiveIntensity={0.5} />
-          </mesh>
-          <mesh position={[0, p.size[1] * 0.72, 0]}>
-            <boxGeometry args={[p.size[0] * 2.08, 0.1, p.size[2] * 2.08]} />
-            <meshBasicMaterial color="#2fe0ff" toneMapped={false} />
-          </mesh>
+          <mesh><boxGeometry args={[p.size[0] * 2, p.size[1] * 2, p.size[2] * 2]} /><meshStandardMaterial color="#0a1220" metalness={0.9} roughness={0.3} emissive="#123a55" emissiveIntensity={0.5} /></mesh>
+          <mesh position={[0, p.size[1] * 0.72, 0]}><boxGeometry args={[p.size[0] * 2.08, 0.1, p.size[2] * 2.08]} /><meshBasicMaterial color="#2fe0ff" toneMapped={false} /></mesh>
         </RigidBody>
       ))}
-
       {RAMPS.map((r, i) => (
         <RigidBody key={i} type="fixed" colliders={false} position={r.pos} rotation={r.rot} friction={0.9}>
           <CuboidCollider args={r.size} />
-          <mesh>
-            <boxGeometry args={[r.size[0] * 2, r.size[1] * 2, r.size[2] * 2]} />
-            <meshStandardMaterial color="#0b1626" metalness={0.85} roughness={0.4} emissive="#1d2f4d" emissiveIntensity={0.6} />
-          </mesh>
-          <mesh position={[0, r.size[1], 0]}>
-            <boxGeometry args={[r.size[0] * 2 * 0.96, 0.06, r.size[2] * 2 * 0.96]} />
-            <meshBasicMaterial color="#7a2bff" toneMapped={false} />
-          </mesh>
+          <mesh><boxGeometry args={[r.size[0] * 2, r.size[1] * 2, r.size[2] * 2]} /><meshStandardMaterial color="#0b1626" metalness={0.85} roughness={0.4} emissive="#1d2f4d" emissiveIntensity={0.6} /></mesh>
+          <mesh position={[0, r.size[1], 0]}><boxGeometry args={[r.size[0] * 2 * 0.96, 0.06, r.size[2] * 2 * 0.96]} /><meshBasicMaterial color="#7a2bff" toneMapped={false} /></mesh>
         </RigidBody>
       ))}
-
       {[[0, 12, -40], [0, 12, 40], [-40, 12, 0], [40, 12, 0]].map((p, i) => (
         <mesh key={i} position={p} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[4.2, 0.09, 6, 32]} />
@@ -699,10 +663,9 @@ function RemotePlayers() {
 function RemotePlayer({ player }) {
   const bodyRef = useRef(null);
   const meshRef = useRef(null);
-  
+
   useFrame(() => {
     const pos = player.getState('pos');
-    const rot = player.getState('rot');
     if (meshRef.current) meshRef.current.visible = !player.getState('dead');
     if (pos && bodyRef.current) {
       const cur = bodyRef.current.translation();
@@ -711,35 +674,15 @@ function RemotePlayer({ player }) {
       const nz = THREE.MathUtils.lerp(cur.z, pos.z, 0.4);
       bodyRef.current.setNextKinematicTranslation({ x: nx, y: ny, z: nz });
     }
-    if (rot && meshRef.current) {
-       meshRef.current.rotation.y = rot.yaw; 
-    }
   });
-
-  useEffect(() => {
-    const handle = bodyRef.current?.handle;
-    if (handle) {
-      enemiesByBody.set(handle, {
-        id: player.id,
-        isPlayer: true,
-        takeDamage: (amount, hitPoint) => {
-           useGame.getState().addDamageNumber([hitPoint.x, hitPoint.y + 0.4, hitPoint.z], String(Math.round(amount)), '#ff2bd6');
-           useGame.getState().registerHit(false);
-           player.setState('lastHit', { damage: amount, t: Date.now() }, true);
-        }
-      });
-    }
-    return () => { if(handle) enemiesByBody.delete(handle); }
-  }, [player.id, player]);
 
   const color = player.getProfile()?.color?.hex || '#ff2bd6';
 
   return (
     <RigidBody ref={bodyRef} type="kinematicPosition" colliders={false}>
-      <CapsuleCollider args={[PLAYER_HALF_HEIGHT, PLAYER_RADIUS]} />
-      <mesh position={[0, 0, 0]} ref={meshRef}>
-         <capsuleGeometry args={[PLAYER_RADIUS, PLAYER_HALF_HEIGHT * 2, 4, 16]} />
-         <meshStandardMaterial color={color} roughness={0.3} emissive={color} emissiveIntensity={0.2} />
+      <mesh ref={meshRef} position={[0, PLAYER_HALF_HEIGHT + PLAYER_RADIUS * 0.5, 0]}>
+        <capsuleGeometry args={[PLAYER_RADIUS, PLAYER_HALF_HEIGHT * 2, 4, 12]} />
+        <meshStandardMaterial color={color} roughness={0.3} emissive={color} emissiveIntensity={0.35} />
       </mesh>
     </RigidBody>
   );
@@ -773,35 +716,21 @@ function Player() {
   const magRef = useRef(null);
   const chargeRingRef = useRef(null);
 
-  const yaw = useRef(0);
-  const pitch = useRef(0);
-  const camKick = useRef(0);
-  const velX = useRef(0);
-  const velZ = useRef(0);
-  const velY = useRef(0);
-  const grounded = useRef(false);
-  const jumpBuffer = useRef(0);
-  const wasGrounded = useRef(true);
-  const bobT = useRef(0);
-  const swayX = useRef(0);
-  const swayY = useRef(0);
-  const recoil = useRef(0);
-  const recoilSide = useRef(0);
-  const reloadAnim = useRef(0);
-  const reloadPhase = useRef(0);
-  const adsT = useRef(0);
-  const flashT = useRef(0);
-  const flashVariant = useRef(0);
-  const fireCd = useRef(0);
-  const dashCd = useRef(0);
-  const reloadT = useRef(0);
-  const comboTimer = useRef(0);
-  const prevStatus = useRef('MENU');
-  const chargeGlow = useRef(0);
+  const yaw = useRef(0), pitch = useRef(0), camKick = useRef(0);
+  const velX = useRef(0), velZ = useRef(0), velY = useRef(0);
+  const grounded = useRef(false), jumpBuffer = useRef(0), wasGrounded = useRef(true);
+  const bobT = useRef(0), swayX = useRef(0), swayY = useRef(0);
+  const recoil = useRef(0), recoilSide = useRef(0);
+  const reloadAnim = useRef(0), reloadPhase = useRef(0);
+  const adsT = useRef(0), flashT = useRef(0), flashVariant = useRef(0);
+  const fireCd = useRef(0), dashCd = useRef(0), reloadT = useRef(0);
+  const comboTimer = useRef(0), prevStatus = useRef('MENU'), chargeGlow = useRef(0);
   const prevHitTime = useRef(0);
   const slideT = useRef(0), slideCd = useRef(0), duck = useRef(0);
   const dashT = useRef(0), dashDX = useRef(0), dashDZ = useRef(0);
   const reloadDur = useRef(RELOAD_TIME), netT = useRef(0);
+  const lastFireT = useRef(0);
+  const recoilRoll = useRef(0);
 
   const controller = useMemo(() => {
     const c = world.createCharacterController(0.02);
@@ -830,9 +759,9 @@ function Player() {
         case 'Space': keys.jump = true; e.preventDefault(); break;
         case 'ShiftLeft': case 'ShiftRight': keys.sprint = true; break;
         case 'KeyE': keys.dash = true; break;
-        case 'KeyC': if (!e.repeat) keys.slidePress = true; keys.slide = true; break;
+        case 'KeyC': if (!e.repeat) { keys.slidePress = true; keys.slide = true; } break;
         case 'Digit1': case 'Digit2': case 'Digit3': {
-          reloadT.current = 0;   // cancel pending reload so swapping can't give a free refill
+          reloadT.current = 0;
           useGame.getState().switchWeapon(Number(e.code.slice(5)) - 1);
           break;
         }
@@ -870,17 +799,11 @@ function Player() {
     const onPointerLockChange = () => {
       const g = useGame.getState();
       if (!isLocked() && g.status === 'PLAYING') {
-        g.pauseGame();
+        g.softPause();
         mouse.left = false; mouse.right = false;
-      } else if (isLocked() && g.status === 'PAUSED') {
-        g.resumeGame();
       }
     };
-    const onBlur = () => {
-      resetInput();
-      const g = useGame.getState();
-      if (g.status === 'PLAYING') g.pauseGame();
-    };
+    const onBlur = () => { resetInput(); };
 
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
@@ -911,7 +834,7 @@ function Player() {
 
     yaw.current = 0; pitch.current = 0; camKick.current = 0;
     velX.current = 0; velZ.current = 0; velY.current = 0;
-    recoil.current = 0; recoilSide.current = 0;
+    recoil.current = 0; recoilSide.current = 0; recoilRoll.current = 0;
     adsT.current = 0; flashT.current = 0;
     fireCd.current = 0; dashCd.current = 0; reloadT.current = 0; comboTimer.current = 0;
     reloadPhase.current = 0; chargeGlow.current = 0;
@@ -930,31 +853,63 @@ function Player() {
     reloadDur.current = WEAPONS[g.activeWeapon].reload || RELOAD_TIME;
     reloadT.current = reloadDur.current;
     reloadPhase.current = 0;
-    sfx('reload');
+  };
+
+  /* Ray-sphere intersection against the enemy list — works on both host and client. */
+  const raycastEnemies = (origin, dir, maxDist) => {
+    let best = null, bestDist = maxDist;
+    const list = useGame.getState().enemies;
+    for (let i = 0; i < list.length; i++) {
+      const e = list[i];
+      const dx = e.position[0] - origin.x;
+      const dy = e.position[1] - origin.y;
+      const dz = e.position[2] - origin.z;
+      const proj = dx * dir.x + dy * dir.y + dz * dir.z;
+      if (proj < 0 || proj > bestDist) continue;
+      const cx = origin.x + dir.x * proj;
+      const cy = origin.y + dir.y * proj;
+      const cz = origin.z + dir.z * proj;
+      const ddx = cx - e.position[0], ddy = cy - e.position[1], ddz = cz - e.position[2];
+      const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+      const r = e.size * 1.1;
+      if (d2 <= r * r) { bestDist = proj; best = { enemy: e, distance: proj }; }
+    }
+    return best;
   };
 
   const fire = () => {
     const g = useGame.getState();
     if (g.status !== 'PLAYING' || g.reloading) return;
     if (g.ammo <= 0) { startReload(); return; }
-    g.consumeAmmo();
 
     const wpn = WEAPONS[g.activeWeapon];
+    const vis = WEAPON_VISUALS[g.activeWeapon];
+    const now = performance.now() / 1000;
+    const timeSinceLast = now - lastFireT.current;
+    lastFireT.current = now;
 
-    const kk = wpn.kick ?? 1;
-    recoil.current = Math.min(1.6, recoil.current + 0.9 * kk);
-    recoilSide.current = -recoilSide.current + (Math.random() - 0.5) * 0.35 * kk;
-    camKick.current += 0.012 * kk;
-    flashT.current = 0.06;
+    g.consumeAmmo();
+
+    /* ---- Weapon kick / FX (heavier for shotgun, light for railgun) ---- */
+    recoil.current = Math.min(2.2, recoil.current + 0.9 * vis.recoil);
+    recoilSide.current = -recoilSide.current + (Math.random() - 0.5) * 0.45 * vis.recoil;
+    recoilRoll.current += (Math.random() - 0.5) * 0.35 * vis.recoil;
+    camKick.current += 0.012 * vis.recoil;
+    flashT.current = 0.07;
     flashVariant.current = Math.random();
     chargeGlow.current = 1;
-    screenFX.fovKick = 1.6 * kk;
-    addShake(0.032 * kk);
-    if (!wpn.beam) sfx('shot' + g.activeWeapon);
+    screenFX.fovKick = vis.fovKick;
+    addShake(vis.shake);
 
+    /* ---- Compute fire origin ---- */
     if (muzzleRef.current) muzzleRef.current.getWorldPosition(_muzzle);
     else _muzzle.copy(camera.position);
 
+    /* ---- Determine damage boost ---- */
+    const boostActive = g.damageBoostUntil > performance.now();
+    const dmgMult = boostActive ? 2 : 1;
+
+    /* ---- Fire projectiles ---- */
     for (let i = 0; i < wpn.projectiles; i++) {
       _origin.copy(camera.position);
       _dir.set(0, 0, -1).applyQuaternion(camera.quaternion);
@@ -966,25 +921,73 @@ function Player() {
       _dir.z += (Math.random() - 0.5) * spread;
       _dir.normalize();
 
-      _end.copy(_origin).addScaledVector(_dir, wpn.range);
-      let ox = _origin.clone(), left = wpn.range;
-      // beam pierces up to 6 enemies; own collider is excluded so steep aiming can't self-hit
-      for (let guard = wpn.beam ? 6 : 1; guard > 0; guard--) {
-        const hit = world.castRay(new rapier.Ray(ox, _dir), left, true, undefined, undefined, colliderRef.current || undefined);
-        if (!hit) break;
-        const toi = hit.timeOfImpact !== undefined ? hit.timeOfImpact : hit.toi || 0;
-        _end.copy(ox).addScaledVector(_dir, toi);
-        const rb = hit.collider && hit.collider.parent ? hit.collider.parent() : null;
-        const enemy = rb ? enemiesByBody.get(rb.handle) : undefined;
-        if (enemy) {
-          enemy.takeDamage(wpn.damage, _end.clone());
-          if (wpn.beam) { ox = _end.clone().addScaledVector(_dir, 0.35); left -= toi + 0.35; if (left > 0) continue; }
-        } else if (!wpn.beam || Math.random() < 0.3) {
-          g.addExplosion([_end.x, _end.y, _end.z], wpn.beam ? '#ffffff' : '#4fd8ff', 0.22, false);
+      /* ---- Cast ray to find wall distance with Rapier ---- */
+      let wallDist = wpn.range;
+      let wallPoint = null;
+      try {
+        const hit = world.castRay(new rapier.Ray(_origin, _dir), wpn.range, true, undefined, undefined, colliderRef.current || undefined);
+        if (hit) {
+          const toi = hit.timeOfImpact !== undefined ? hit.timeOfImpact : hit.toi || 0;
+          wallDist = toi;
+          wallPoint = _origin.clone().addScaledVector(_dir, toi);
         }
-        break;
+      } catch {}
+
+      /* ---- Enemy raycast ---- */
+      if (wpn.beam) {
+        // Piercing beam — hit up to 5 enemies along the ray
+        let hits = 0;
+        const hitsList = [];
+        let ox = _origin.clone();
+        let remaining = Math.min(wallDist, wpn.range);
+        for (let k = 0; k < 5; k++) {
+          const eHit = raycastEnemies(ox, _dir, remaining);
+          if (!eHit) break;
+          const hx = ox.x + _dir.x * eHit.distance;
+          const hy = ox.y + _dir.y * eHit.distance;
+          const hz = ox.z + _dir.z * eHit.distance;
+          const point = new THREE.Vector3(hx, hy, hz);
+          hitsList.push({ enemy: eHit.enemy, point });
+          g.addDamageNumber([hx, hy + 0.3, hz], String(Math.round(wpn.damage * dmgMult)), '#ffffff');
+          useGame.getState().registerHit(false);
+          const me = myPlayer();
+          if (me) {
+            me.setState('dmgOut', [...(me.getState('dmgOut') || []).slice(-30), {
+              i: eHit.enemy.id, d: wpn.damage * dmgMult, t: Date.now() + k, p: [hx, hy, hz],
+            }], false);
+          }
+          ox = point.clone().addScaledVector(_dir, 0.5);
+          remaining -= eHit.distance + 0.5;
+          if (remaining <= 0) break;
+        }
+        const finalEnd = hitsList.length
+          ? hitsList[hitsList.length - 1].point.clone().addScaledVector(_dir, 2)
+          : (wallPoint || _origin.clone().addScaledVector(_dir, wpn.range));
+        g.addTracer([_muzzle.x, _muzzle.y, _muzzle.z], [finalEnd.x, finalEnd.y, finalEnd.z], true, vis.tracerColor);
+      } else {
+        const eHit = raycastEnemies(_origin, _dir, wallDist);
+        if (eHit) {
+          const hx = _origin.x + _dir.x * eHit.distance;
+          const hy = _origin.y + _dir.y * eHit.distance;
+          const hz = _origin.z + _dir.z * eHit.distance;
+          _end.set(hx, hy, hz);
+          g.addDamageNumber([hx, hy + 0.3, hz], String(Math.round(wpn.damage * dmgMult)), '#ffffff');
+          useGame.getState().registerHit(false);
+          g.addExplosion([hx, hy, hz], vis.orange ? '#ffcc44' : '#ffb020', 0.3, false);
+          const me = myPlayer();
+          if (me) {
+            me.setState('dmgOut', [...(me.getState('dmgOut') || []).slice(-30), {
+              i: eHit.enemy.id, d: wpn.damage * dmgMult, t: Date.now(), p: [hx, hy, hz],
+            }], false);
+          }
+        } else if (wallPoint) {
+          _end.copy(wallPoint);
+          g.addExplosion([_end.x, _end.y, _end.z], vis.orange ? '#ffcc44' : '#4fd8ff', 0.22, false);
+        } else {
+          _end.copy(_origin).addScaledVector(_dir, wpn.range);
+        }
+        g.addTracer([_muzzle.x, _muzzle.y, _muzzle.z], [_end.x, _end.y, _end.z], false, vis.tracerColor);
       }
-      g.addTracer([_muzzle.x, _muzzle.y, _muzzle.z], [_end.x, _end.y, _end.z], wpn.beam);
     }
   };
 
@@ -998,6 +1001,7 @@ function Player() {
     const playing = g.status === 'PLAYING';
     const me = myPlayer();
 
+    /* --- Handle incoming damage broadcast from other players --- */
     if (me && playing) {
       const hit = me.getState('lastHit');
       if (hit && hit.t !== prevHitTime.current) {
@@ -1006,8 +1010,9 @@ function Player() {
       }
     }
 
+    /* --- Look --- */
     if (playing) {
-      const sens = 0.0022 * THREE.MathUtils.lerp(1, 0.55, adsT.current);
+      const sens = 0.0022 * useSettings.getState().sensitivity * THREE.MathUtils.lerp(1, 0.55, adsT.current);
       yaw.current -= look.dx * sens;
       pitch.current -= look.dy * sens;
       pitch.current = THREE.MathUtils.clamp(pitch.current, -Math.PI / 2 + 0.05, Math.PI / 2 - 0.05);
@@ -1021,6 +1026,7 @@ function Player() {
     swayY.current = THREE.MathUtils.damp(swayY.current, 0, 10, dt);
     look.dx = 0; look.dy = 0;
 
+    /* --- Movement input --- */
     let ix = 0, iz = 0;
     if (playing) {
       if (keys.forward) iz -= 1;
@@ -1036,46 +1042,48 @@ function Player() {
     const fwdX = -sinY, fwdZ = -cosY;
     const rgtX = cosY, rgtZ = -sinY;
 
+    /* --- Dash --- */
     dashCd.current = Math.max(0, dashCd.current - dt);
-
     if (keys.dash && dashCd.current === 0 && playing) {
       dashDX.current = (mag > 0) ? (fwdX * -iz + rgtX * ix) : fwdX;
       dashDZ.current = (mag > 0) ? (fwdZ * -iz + rgtZ * ix) : fwdZ;
       dashT.current = 0.2; dashCd.current = 1.0; slideT.current = 0;
-      screenFX.fovKick = 24; screenFX.chroma = Math.min(1.5, screenFX.chroma + 0.9); addShake(0.3);
+      screenFX.fovKick = 26; addShake(0.32);
       g.addExplosion([camera.position.x, camera.position.y - 0.7, camera.position.z], '#35e6ff', 1.3, true);
-      sfx('dash');
     }
     const dashing = dashT.current > 0 && playing;
-    playerState.invuln = dashing;           // i-frames while dashing
+    playerState.invuln = dashing;
     if (dashing) {
       dashT.current -= dt;
-      velX.current = dashDX.current * 40;   // ~8m burst, ignores gravity
+      velX.current = dashDX.current * 40;
       velZ.current = dashDZ.current * 40;
       velY.current = Math.max(velY.current, 0) * 0.5;
     }
 
-    let currentSpeed = WALK_SPEED * (keys.sprint ? SPRINT_MULT : 1) * THREE.MathUtils.lerp(1, ADS_SPEED_MULT, adsT.current);
+    /* --- Speed boost from pickup --- */
+    const speedBoost = g.speedBoostUntil > performance.now() ? 1.35 : 1;
+
+    let currentSpeed = WALK_SPEED * (keys.sprint ? SPRINT_MULT : 1) * speedBoost * THREE.MathUtils.lerp(1, ADS_SPEED_MULT, adsT.current);
     let accel = grounded.current ? 15 : 4;
+
     slideCd.current = Math.max(0, slideCd.current - dt);
     if (keys.slidePress) {
       keys.slidePress = false;
       const hs = Math.hypot(velX.current, velZ.current);
       if (playing && grounded.current && slideT.current <= 0 && slideCd.current <= 0 && hs > 4) {
         slideT.current = 0.9; slideCd.current = 0.5;
-        const k = 19 / hs; velX.current *= k; velZ.current *= k;   // real speed boost
-        screenFX.fovKick = 7; addShake(0.1); sfx('slide');
+        const k = 19 / hs; velX.current *= k; velZ.current *= k;
+        screenFX.fovKick = 7; addShake(0.1);
       }
     }
     const sliding = slideT.current > 0 && playing;
     if (sliding) {
       slideT.current -= dt;
-      const dec = Math.exp(-1.1 * dt);       // glide, bleeding speed
+      const dec = Math.exp(-1.1 * dt);
       velX.current *= dec; velZ.current *= dec;
-      accel = 0;                              // no braking while sliding; jump keeps the momentum
+      accel = 0;
     }
     duck.current = THREE.MathUtils.damp(duck.current, sliding ? -0.7 : 0, 16, dt);
-    const duckOffset = duck.current;
 
     const wishX = (fwdX * -iz + rgtX * ix) * currentSpeed;
     const wishZ = (fwdZ * -iz + rgtZ * ix) * currentSpeed;
@@ -1121,7 +1129,6 @@ function Player() {
     const hFactor = Math.min(1, hSpeed / WALK_SPEED);
 
     bobT.current += grounded.current ? dt * (8 + hFactor * 6) : dt * 2;
-
     const bobDamp = 1 - adsT.current * 0.8;
     const bobX = Math.sin(bobT.current) * 0.034 * hFactor * bobDamp;
     const bobY = Math.abs(Math.cos(bobT.current)) * 0.045 * hFactor * bobDamp;
@@ -1129,27 +1136,28 @@ function Player() {
     camKick.current = THREE.MathUtils.damp(camKick.current, 0, 9, dt);
     screenFX.shake = THREE.MathUtils.damp(screenFX.shake, 0, 8, dt);
     screenFX.fovKick = THREE.MathUtils.damp(screenFX.fovKick, 0, 14, dt);
-    screenFX.chroma = THREE.MathUtils.damp(screenFX.chroma, 0, 3.5, dt);
 
     const shakeMag = screenFX.shake;
     const shX = (Math.random() - 0.5) * shakeMag;
     const shY = (Math.random() - 0.5) * shakeMag;
     const shZ = (Math.random() - 0.5) * shakeMag * 0.4;
 
-    const roll = -ix * 0.022 + swayX.current * 0.4 + recoilSide.current * 0.06;
+    const roll = -ix * 0.022 + swayX.current * 0.4 + recoilSide.current * 0.06 + recoilRoll.current * 0.12;
     _euler.set(pitch.current + camKick.current + shY * 0.35, yaw.current + shX * 0.35, roll + shX * 0.5, 'YXZ');
     camera.quaternion.setFromEuler(_euler);
-    camera.position.set(nx + shX, ny + PLAYER_EYE_OFFSET + bobY + shY + duckOffset, nz + shZ);
+    camera.position.set(nx + shX, ny + PLAYER_EYE_OFFSET + bobY + shY + duck.current, nz + shZ);
 
     netT.current += dt;
-    if (me && playing && netT.current >= 0.05) {   // 20Hz, unreliable: no more network backlog
+    if (me && playing && netT.current >= 0.05) {
       netT.current = 0;
       me.setState('pos', { x: nx, y: ny, z: nz }, false);
       me.setState('rot', { yaw: yaw.current }, false);
     }
 
+    /* --- FOV: ADS + base setting + kick --- */
     adsT.current = THREE.MathUtils.damp(adsT.current, g.ads ? 1 : 0, 13, dt);
-    const targetFov = THREE.MathUtils.lerp(78, 55, adsT.current) + screenFX.fovKick;
+    const baseFov = useSettings.getState().fov;
+    const targetFov = THREE.MathUtils.lerp(baseFov, baseFov * 0.7, adsT.current) + screenFX.fovKick;
     if (Math.abs(camera.fov - targetFov) > 0.01) {
       camera.fov = targetFov;
       camera.updateProjectionMatrix();
@@ -1160,8 +1168,10 @@ function Player() {
     playerState.speed = hSpeed;
     playerState.alive = playing;
 
+    /* --- Weapon animation --- */
     recoil.current = THREE.MathUtils.damp(recoil.current, 0, 15, dt);
     recoilSide.current = THREE.MathUtils.damp(recoilSide.current, 0, 12, dt);
+    recoilRoll.current = THREE.MathUtils.damp(recoilRoll.current, 0, 11, dt);
     reloadAnim.current = THREE.MathUtils.damp(reloadAnim.current, g.reloading ? 1 : 0, 11, dt);
     chargeGlow.current = THREE.MathUtils.damp(chargeGlow.current, 0, 8, dt);
 
@@ -1179,17 +1189,17 @@ function Player() {
       w.quaternion.copy(camera.quaternion);
 
       const swing = 1 - adsT.current * 0.85;
-      const px = THREE.MathUtils.lerp(HIP_POS.x, ADS_POS.x, adsT.current) + bobX * 0.7 * swing + swayX.current * swing + recoilSide.current * 0.035;
+      const px = THREE.MathUtils.lerp(HIP_POS.x, ADS_POS.x, adsT.current) + bobX * 0.7 * swing + swayX.current * swing + recoilSide.current * 0.045;
       const py = THREE.MathUtils.lerp(HIP_POS.y, ADS_POS.y, adsT.current) + bobY * 0.7 * swing + swayY.current * swing - dipCurve * 0.24;
-      const pz = THREE.MathUtils.lerp(HIP_POS.z, ADS_POS.z, adsT.current) + recoil.current * 0.08;
+      const pz = THREE.MathUtils.lerp(HIP_POS.z, ADS_POS.z, adsT.current) + recoil.current * 0.09;
 
       w.translateX(px);
       w.translateY(py);
       w.translateZ(pz);
 
-      w.rotateX(recoil.current * 0.38 - dipCurve * 0.55);
-      w.rotateZ(-swayX.current * 1.8 - ix * 0.045 + dipCurve * 1.1);
-      w.rotateY(recoilSide.current * 0.4 + dipCurve * 0.7);
+      w.rotateX(recoil.current * 0.42 - dipCurve * 0.55);
+      w.rotateZ(-swayX.current * 1.8 - ix * 0.045 + dipCurve * 1.1 + recoilRoll.current * 0.25);
+      w.rotateY(recoilSide.current * 0.42 + dipCurve * 0.7);
     }
 
     if (magRef.current) {
@@ -1200,7 +1210,6 @@ function Player() {
       magRef.current.position.z = -0.05 - off * 0.05;
       magRef.current.rotation.z = off * 1.4;
     }
-
     if (chargeRingRef.current) {
       const cg = chargeGlow.current;
       const s = 1 + cg * 0.6;
@@ -1211,7 +1220,8 @@ function Player() {
     const mz = [-0.47, -0.74, -0.84][g.activeWeapon] ?? -0.47;
     if (muzzleRef.current) muzzleRef.current.position.z = mz;
     if (flashRef.current) flashRef.current.position.z = mz - 0.04;
-    beamSound(playing && mouse.left && !g.reloading && g.ammo > 0 && !!WEAPONS[g.activeWeapon].beam);
+
+    /* --- Firing --- */
     fireCd.current -= dt;
     if (playing && mouse.left && !g.reloading && fireCd.current <= 0) {
       const wpn = WEAPONS[g.activeWeapon];
@@ -1220,6 +1230,7 @@ function Player() {
     }
     if (fireCd.current < -1) fireCd.current = 0;
 
+    /* --- Reload --- */
     if (reloadT.current > 0) {
       reloadT.current -= dt;
       if (reloadT.current <= 0) {
@@ -1228,26 +1239,30 @@ function Player() {
       }
     }
 
+    /* --- Muzzle flash --- */
     if (flashT.current > 0) {
       flashT.current -= dt;
-      const k = Math.max(0, flashT.current / 0.06);
+      const k = Math.max(0, flashT.current / 0.07);
+      const vis = WEAPON_VISUALS[g.activeWeapon];
       if (flashRef.current) {
         flashRef.current.visible = true;
         const v = flashVariant.current;
-        flashRef.current.scale.set(
-          (0.7 + k * 1.1) * (0.85 + v * 0.4),
-          (0.7 + k * 1.1) * (0.85 + (1 - v) * 0.4),
-          (0.7 + k * 1.1)
-        );
+        const base = (0.7 + k * 1.1) * vis.flash;
+        flashRef.current.scale.set(base * (0.85 + v * 0.4), base * (0.85 + (1 - v) * 0.4), base);
         flashRef.current.rotation.z = v * Math.PI * 2;
         flashRef.current.material.opacity = k;
+        flashRef.current.material.color.setStyle(vis.orange ? '#ffddaa' : '#b6f6ff');
       }
-      if (flashLightRef.current) flashLightRef.current.intensity = k * 14;
+      if (flashLightRef.current) {
+        flashLightRef.current.intensity = k * 14 * vis.flash;
+        flashLightRef.current.color.setStyle(vis.orange ? '#ffcc66' : '#7fe9ff');
+      }
     } else {
       if (flashRef.current) flashRef.current.visible = false;
       if (flashLightRef.current) flashLightRef.current.intensity = 0;
     }
 
+    /* --- Combo decay --- */
     if (playing && g.combo > 0) {
       comboTimer.current -= dt;
       if (comboTimer.current <= 0) {
@@ -1269,6 +1284,7 @@ function Player() {
       </RigidBody>
 
       <group ref={weaponRef}>
+        {/* Receiver */}
         <mesh position={[0, 0, -0.06]}>
           <boxGeometry args={[0.1, 0.135, 0.4]} />
           <meshStandardMaterial color="#161d2c" metalness={0.95} roughness={0.32} />
@@ -1332,29 +1348,36 @@ function Player() {
           <meshBasicMaterial color="#ff2bd6" toneMapped={false} />
         </mesh>
 
+        {/* SHOTGUN visual additions */}
         {activeWeapon === 1 && (<>
-          <mesh position={[0, 0.034, -0.5]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.03, 0.03, 0.55, 10]} /><meshStandardMaterial color="#1b1410" metalness={1} roughness={0.25} /></mesh>
-          <mesh position={[0, -0.02, -0.33]}><boxGeometry args={[0.1, 0.07, 0.2]} /><meshBasicMaterial color="#ff9a1a" toneMapped={false} /></mesh>
-          <mesh position={[0, 0.034, -0.78]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.032, 0.007, 6, 12]} /><meshBasicMaterial color="#ffcc66" toneMapped={false} /></mesh>
+          <mesh position={[0, 0.034, -0.5]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.035, 0.035, 0.55, 10]} /><meshStandardMaterial color="#1b1410" metalness={1} roughness={0.25} /></mesh>
+          <mesh position={[0, -0.02, -0.33]}><boxGeometry args={[0.12, 0.08, 0.24]} /><meshStandardMaterial color="#2a1a10" emissive="#ff9a1a" emissiveIntensity={0.6} metalness={0.85} roughness={0.4} /></mesh>
+          <mesh position={[0, 0.034, -0.78]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.04, 0.008, 6, 12]} /><meshBasicMaterial color="#ffcc66" toneMapped={false} /></mesh>
+          <mesh position={[0.062, -0.05, -0.15]}><boxGeometry args={[0.01, 0.06, 0.08]} /><meshBasicMaterial color="#ff9a1a" toneMapped={false} /></mesh>
+          <mesh position={[-0.062, -0.05, -0.15]}><boxGeometry args={[0.01, 0.06, 0.08]} /><meshBasicMaterial color="#ff9a1a" toneMapped={false} /></mesh>
         </>)}
+
+        {/* RAILGUN visual additions */}
         {activeWeapon === 2 && (<>
-          {[-0.04, 0.04].map((x) => (
-            <mesh key={x} position={[x, 0.03, -0.55]}><boxGeometry args={[0.02, 0.02, 0.8]} /><meshBasicMaterial color="#7fe9ff" toneMapped={false} /></mesh>
+          {[-0.045, 0.045].map((x) => (
+            <mesh key={x} position={[x, 0.03, -0.55]}><boxGeometry args={[0.022, 0.022, 0.85]} /><meshBasicMaterial color="#7fe9ff" toneMapped={false} /></mesh>
           ))}
           {[-0.3, -0.5, -0.7].map((z) => (
-            <mesh key={z} position={[0, 0.03, z]}><torusGeometry args={[0.055, 0.01, 6, 14]} /><meshBasicMaterial color="#ff2bd6" toneMapped={false} /></mesh>
+            <mesh key={z} position={[0, 0.03, z]}><torusGeometry args={[0.062, 0.012, 6, 14]} /><meshBasicMaterial color="#ff2bd6" toneMapped={false} /></mesh>
           ))}
-          <mesh position={[0, 0.03, -0.55]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.012, 0.012, 0.85, 8]} /><meshBasicMaterial color="#ffffff" toneMapped={false} /></mesh>
+          <mesh position={[0, 0.03, -0.55]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.014, 0.014, 0.9, 8]} /><meshBasicMaterial color="#ffffff" toneMapped={false} /></mesh>
+          <mesh position={[0, 0.03, -0.9]}><sphereGeometry args={[0.035, 12, 12]} /><meshBasicMaterial color="#7fe9ff" toneMapped={false} /></mesh>
         </>)}
+
         <mesh ref={muzzleRef} position={[0, 0.008, -0.47]}>
           <sphereGeometry args={[0.001, 4, 4]} />
           <meshBasicMaterial visible={false} />
         </mesh>
         <mesh ref={flashRef} position={[0, 0.008, -0.51]} visible={false}>
-          <sphereGeometry args={[0.09, 6, 6]} />
+          <sphereGeometry args={[0.09, 8, 8]} />
           <meshBasicMaterial color="#b6f6ff" transparent opacity={1} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
         </mesh>
-        <pointLight ref={flashLightRef} position={[0, 0.008, -0.5]} color="#7fe9ff" intensity={0} distance={8} decay={2} />
+        <pointLight ref={flashLightRef} position={[0, 0.008, -0.5]} color="#7fe9ff" intensity={0} distance={9} decay={2} />
       </group>
     </>
   );
@@ -1362,8 +1385,17 @@ function Player() {
 
 /* ==================================================================
  *  ENEMY
+ *
+ *  Host path:  Rapier RigidBody + AI, authoritative.
+ *  Client path: Visual-only mesh, position lerped from host snapshot.
  * ================================================================== */
-function Enemy({ data }) {
+function Enemy({ data, isHostPlayer }) {
+  if (isHostPlayer) return <HostEnemy data={data} />;
+  return <ClientEnemy data={data} />;
+}
+
+/* ------- Host-side enemy (owns the physics body + AI) ------- */
+function HostEnemy({ data }) {
   const bodyRef = useRef(null);
   const innerRef = useRef(null);
   const wireRef = useRef(null);
@@ -1375,19 +1407,16 @@ function Enemy({ data }) {
   const knock = useRef(new THREE.Vector3());
   const phase = useRef(Math.random() * Math.PI * 2);
   const def = ENEMY_DEFS[data.type];
-  const killedByMe = useRef(false);
+  const players = usePlayersList();
 
+  /* Publish current position/hp for this enemy into the shared frame map. */
   useFrame((state, rawDt) => {
     const dt = Math.min(rawDt, 1 / 30);
     const body = bodyRef.current;
     if (!body) return;
     const g = useGame.getState();
 
-    if (hp.current > 0 && window.deadEnemiesSet?.has(data.id)) {
-       hp.current = 0;
-       dying.current = 0.01;
-    }
-
+    /* ---- Death animation ---- */
     if (dying.current > 0) {
       dying.current = Math.min(1, dying.current + dt * 3.2);
       const d = dying.current;
@@ -1409,12 +1438,16 @@ function Enemy({ data }) {
         dead.current = true;
         const tr = body.translation();
         g.addExplosion([tr.x, tr.y, tr.z], def.emissive, 1.15 * def.size + 0.4, true);
-        sfx('boom');
-        // only the player who made the kill gets score / combo / shake / loot
-        if (killedByMe.current) {
-          addShake(0.05 + def.size * 0.05);
+        addShake(0.05 + def.size * 0.05);
+        if (killedByMeLocal.current) {
           g.registerKill(data.score, data.type);
-          if (Math.random() < 0.22) g.spawnPickup([tr.x, Math.max(0.9, tr.y), tr.z], Math.random() < 0.5 ? 'health' : 'ammo');
+          /* drop chance - bosses always drop */
+          if (data.type === 'boss' || Math.random() < 0.22) {
+            const dropType = Math.random() < 0.35 ? 'health'
+              : Math.random() < 0.6 ? 'ammo'
+              : Math.random() < 0.5 ? 'damage' : 'speed';
+            g.spawnPickup([tr.x, Math.max(0.9, tr.y), tr.z], dropType);
+          }
         }
         g.removeEnemy(data.id);
       }
@@ -1438,22 +1471,35 @@ function Enemy({ data }) {
       return;
     }
 
+    /* ---- Find nearest live player ---- */
     const t = body.translation();
-    
-    let dx = playerState.position.x - t.x;
-    let dy = playerState.position.y - t.y;
-    let dz = playerState.position.z - t.z;
-    let minDist = Math.hypot(dx, dy, dz);
-    if (myPlayer()?.getState('dead')) minDist = Infinity;
+    let targetX = 0, targetY = 0, targetZ = 0;
+    let minDist = Infinity;
+    const meId = myPlayer()?.id;
+    players.forEach((p) => {
+      if (p.getState('dead')) return;
+      let pos;
+      if (p.id === meId) {
+        pos = playerState.position;
+      } else {
+        pos = p.getState('pos');
+      }
+      if (!pos) return;
+      const d = Math.hypot(pos.x - t.x, pos.y - t.y, pos.z - t.z);
+      if (d < minDist) { minDist = d; targetX = pos.x; targetY = pos.y; targetZ = pos.z; }
+    });
 
+    if (minDist === Infinity) {
+      body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      return;
+    }
 
+    const dx = targetX - t.x, dy = targetY - t.y, dz = targetZ - t.z;
     const dist = Math.max(1e-3, minDist);
     const inv = 1 / dist;
     const ct = state.clock.elapsedTime;
 
-    let wishX = dx * inv;
-    let wishY = dy * inv;
-    let wishZ = dz * inv;
+    let wishX = dx * inv, wishY = dy * inv, wishZ = dz * inv;
     let speedMult = 1;
 
     if (data.type === 'drone') {
@@ -1466,36 +1512,56 @@ function Enemy({ data }) {
     } else if (data.type === 'brute') {
       if (dist < 8) speedMult = 1.9;
       wishY += Math.sin(ct * 2.6 + phase.current) * 0.15;
+    } else if (data.type === 'boss') {
+      wishY += Math.sin(ct * 1.8 + phase.current) * 0.25;
+      if (dist < 10) speedMult = 1.6;
     }
 
     knock.current.multiplyScalar(0.86);
     const speed = data.speed * speedMult;
 
-    if (minDist === Infinity) {
-      wishX = 0; wishY = 0; wishZ = 0;
-    }
-
-    body.setLinvel(
-      {
-        x: wishX * speed + knock.current.x,
-        y: wishY * speed + knock.current.y,
-        z: wishZ * speed + knock.current.z,
-      },
-      true,
-    );
+    body.setLinvel({
+      x: wishX * speed + knock.current.x,
+      y: wishY * speed + knock.current.y,
+      z: wishZ * speed + knock.current.z,
+    }, true);
 
     if (innerRef.current) {
-      const spin = data.type === 'brute' ? 0.6 : data.type === 'wraith' ? 3.2 : 2.4;
+      const spin = data.type === 'brute' ? 0.6 : data.type === 'boss' ? 0.35 : data.type === 'wraith' ? 3.2 : 2.4;
       innerRef.current.rotation.x += dt * spin;
       innerRef.current.rotation.y += dt * spin * 0.7;
       innerRef.current.rotation.z += dt * spin * 0.4;
     }
 
-    if (dist < ENEMY_TOUCH_RADIUS + (def.size - 0.5) * 0.8) {
-      g.damagePlayer(data.damage);
+    /* ---- Contact damage vs. any player ---- */
+    if (minDist < ENEMY_TOUCH_RADIUS + (def.size - 0.5) * 0.8) {
+      /* If we (host) are the nearest, damage locally; if another player is nearer, the host
+         sends them a hit via their lastHit state. */
+      const meObj = myPlayer();
+      let damageMe = false;
+      let closestPlayerId = null;
+      let closestD = Infinity;
+      players.forEach((p) => {
+        if (p.getState('dead')) return;
+        const pos = p.id === meId ? playerState.position : p.getState('pos');
+        if (!pos) return;
+        const d = Math.hypot(pos.x - t.x, pos.y - t.y, pos.z - t.z);
+        if (d < closestD) { closestD = d; closestPlayerId = p.id; }
+      });
+      if (closestPlayerId === meId) {
+        g.damagePlayer(data.damage);
+      } else {
+        /* send a hit to the remote player */
+        const remote = players.find((p) => p.id === closestPlayerId);
+        if (remote) {
+          remote.setState('lastHit', { damage: data.damage, t: Date.now() + Math.random() }, true);
+        }
+      }
       dying.current = 0.01;
     }
   });
+
+  const killedByMeLocal = useRef(false);
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -1519,14 +1585,11 @@ function Enemy({ data }) {
         knock.current.z += (kz / km) * 4;
 
         hitFlash.current = 1;
-        sfx(hp.current <= 0 ? 'kill' : 'hit');
 
         if (hp.current <= 0) {
           dying.current = 0.01;
-          killedByMe.current = true;
+          killedByMeLocal.current = true;
           g.addDamageNumber([point.x, point.y + 0.55, point.z], `+${Math.round(data.score)}`, def.wire);
-          const me = myPlayer();
-          if (me) me.setState('kills', [...(me.getState('kills') || []).slice(-60), data.id], true);
         } else {
           g.registerHit(false);
           g.addExplosion([point.x, point.y, point.z], '#ffb020', 0.28, false);
@@ -1540,6 +1603,8 @@ function Enemy({ data }) {
     <boxGeometry args={[def.size, def.size, def.size]} />
   ) : data.type === 'wraith' ? (
     <dodecahedronGeometry args={[def.size, 0]} />
+  ) : data.type === 'boss' ? (
+    <boxGeometry args={[def.size, def.size * 0.8, def.size]} />
   ) : (
     <octahedronGeometry args={[def.size, 0]} />
   );
@@ -1559,30 +1624,299 @@ function Enemy({ data }) {
       <group ref={innerRef}>
         <mesh>
           {shapeJSX}
-          <meshStandardMaterial
-            ref={coreMatRef}
-            color="#1a0208"
-            emissive={def.emissive}
-            emissiveIntensity={4.5}
-            metalness={0.4}
-            roughness={0.35}
-            toneMapped={false}
-          />
+          <meshStandardMaterial ref={coreMatRef} color="#1a0208" emissive={def.emissive} emissiveIntensity={4.5} metalness={0.4} roughness={0.35} toneMapped={false} />
         </mesh>
         <mesh ref={wireRef} scale={1.55}>
-          {data.type === 'brute' ? <boxGeometry args={[def.size, def.size, def.size]} />
-            : data.type === 'wraith' ? <dodecahedronGeometry args={[def.size, 0]} />
-            : <octahedronGeometry args={[def.size, 0]} />}
+          {shapeJSX}
           <meshBasicMaterial color={def.wire} wireframe transparent opacity={0.42} toneMapped={false} />
         </mesh>
+        {data.type === 'boss' && (
+          <mesh rotation={[Math.PI / 2, 0, 0]} scale={1.9}>
+            <torusGeometry args={[def.size, 0.05, 6, 24]} />
+            <meshBasicMaterial color="#ff3355" transparent opacity={0.85} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
+          </mesh>
+        )}
       </group>
     </RigidBody>
   );
 }
 
+/* ------- Client-side enemy (visual-only, lerps to snapshot) ------- */
+function ClientEnemy({ data }) {
+  const groupRef = useRef(null);
+  const innerRef = useRef(null);
+  const wireRef = useRef(null);
+  const coreMatRef = useRef(null);
+  const def = ENEMY_DEFS[data.type];
+  const targetRef = useRef(new THREE.Vector3(data.position[0], data.position[1], data.position[2]));
+  const initRef = useRef(false);
+  const hitFlash = useRef(0);
+  const lastHp = useRef(data.hp);
+  const dead = useRef(false);
+
+  useEffect(() => {
+    targetRef.current.set(data.position[0], data.position[1], data.position[2]);
+  }, [data.position[0], data.position[1], data.position[2]]);
+
+  useFrame((state, rawDt) => {
+    const dt = Math.min(rawDt, 1 / 30);
+    const g = useGame.getState();
+    if (!groupRef.current) return;
+
+    if (!initRef.current) {
+      groupRef.current.position.copy(targetRef.current);
+      initRef.current = true;
+    }
+
+    /* Lerp visual position toward host's snapshot — smooths out the 12Hz updates. */
+    const k = 1 - Math.pow(0.001, dt);
+    groupRef.current.position.lerp(targetRef.current, k);
+
+    /* Hit flash when HP drops */
+    if (data.hp < lastHp.current) hitFlash.current = 1;
+    lastHp.current = data.hp;
+    hitFlash.current = Math.max(0, hitFlash.current - dt * 4.2);
+
+    if (coreMatRef.current) {
+      coreMatRef.current.emissiveIntensity = 4.5 + hitFlash.current * 6;
+      if (hitFlash.current > 0.05) coreMatRef.current.emissive.setRGB(1, 1, 1);
+      else coreMatRef.current.emissive.setStyle(def.emissive);
+    }
+
+    if (innerRef.current) {
+      const spin = data.type === 'brute' ? 0.6 : data.type === 'boss' ? 0.35 : data.type === 'wraith' ? 3.2 : 2.4;
+      innerRef.current.rotation.x += dt * spin;
+      innerRef.current.rotation.y += dt * spin * 0.7;
+      innerRef.current.rotation.z += dt * spin * 0.4;
+    }
+
+    /* Local contact damage — since we don't have Rapier for clients, use sphere distance. */
+    if (g.status === 'PLAYING' && !playerState.invuln) {
+      const p = groupRef.current.position;
+      const dx = playerState.position.x - p.x;
+      const dy = playerState.position.y - p.y;
+      const dz = playerState.position.z - p.z;
+      const d = Math.hypot(dx, dy, dz);
+      if (d < ENEMY_TOUCH_RADIUS + (def.size - 0.5) * 0.8) {
+        /* Host is authoritative for damage, but local pre-check helps responsiveness.
+           The host will send us a hit shortly. */
+      }
+    }
+  });
+
+  const shapeJSX = data.type === 'brute' ? (
+    <boxGeometry args={[def.size, def.size, def.size]} />
+  ) : data.type === 'wraith' ? (
+    <dodecahedronGeometry args={[def.size, 0]} />
+  ) : data.type === 'boss' ? (
+    <boxGeometry args={[def.size, def.size * 0.8, def.size]} />
+  ) : (
+    <octahedronGeometry args={[def.size, 0]} />
+  );
+
+  return (
+    <group ref={groupRef} position={data.position}>
+      <group ref={innerRef}>
+        <mesh>
+          {shapeJSX}
+          <meshStandardMaterial ref={coreMatRef} color="#1a0208" emissive={def.emissive} emissiveIntensity={4.5} metalness={0.4} roughness={0.35} toneMapped={false} />
+        </mesh>
+        <mesh ref={wireRef} scale={1.55}>
+          {shapeJSX}
+          <meshBasicMaterial color={def.wire} wireframe transparent opacity={0.42} toneMapped={false} />
+        </mesh>
+        {data.type === 'boss' && (
+          <mesh rotation={[Math.PI / 2, 0, 0]} scale={1.9}>
+            <torusGeometry args={[def.size, 0.05, 6, 24]} />
+            <meshBasicMaterial color="#ff3355" transparent opacity={0.85} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
+          </mesh>
+        )}
+      </group>
+    </group>
+  );
+}
+
 /* ==================================================================
  *  ENEMY MANAGER
+ *
+ *  HOST: spawns new enemies, publishes snapshots at 12Hz, applies incoming damage.
+ *  CLIENT: mirrors the snapshot into the local store.
  * ================================================================== */
+function EnemyManager() {
+  const status = useGame((s) => s.status);
+  const enemies = useGame((s) => s.enemies);
+  const host = useMemo(() => isHost(), []);
+  const players = usePlayersList();
+
+  const spawnAcc = useRef(0);
+  const waveAcc = useRef(0);
+  const publishAcc = useRef(0);
+  const lastProcessedDamage = useRef(new Map()); // playerId -> last seen t
+  const localBossId = useRef(null);
+
+  useEffect(() => {
+    if (status === 'PLAYING') { spawnAcc.current = 0.4; waveAcc.current = 0; publishAcc.current = 0; }
+  }, [status]);
+
+  /* Sync bossEnemyId in the store for HUD. */
+  useEffect(() => {
+    if (!host) return;
+    const boss = enemies.find((e) => e.type === 'boss');
+    useGame.setState({ bossEnemyId: boss ? boss.id : null });
+  }, [enemies, host]);
+
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, 1 / 30);
+    const g = useGame.getState();
+    if (g.status !== 'PLAYING') return;
+
+    /* ---------- HOST ---------- */
+    if (host) {
+      waveAcc.current += dt;
+      if (waveAcc.current >= WAVE_DURATION) {
+        waveAcc.current -= WAVE_DURATION;
+        g.nextWave();
+      }
+
+      /* ---- Spawn enemies ---- */
+      spawnAcc.current += dt;
+      const isBossWave = g.wave > 0 && g.wave % 5 === 0;
+      const interval = Math.max(SPAWN_MIN_INTERVAL, 1.5 - (g.wave - 1) * 0.075);
+      const maxAlive = Math.min(MAX_ENEMIES, 6 + Math.floor((g.wave - 1) * 1.5));
+
+      const bossAlive = g.enemies.some((e) => e.type === 'boss');
+
+      if (spawnAcc.current >= interval) {
+        spawnAcc.current = 0;
+        const aliveCount = g.enemies.length;
+        if (isBossWave && !bossAlive) {
+          /* Spawn a boss on boss waves. */
+          const stats = enemyStats('boss', g.wave);
+          const id = 'boss-' + g.wave + '-' + Math.random().toString(36).slice(2, 6);
+          g.spawnEnemy({
+            id, type: 'boss',
+            position: randomEdgeSpawn(),
+            size: ENEMY_DEFS.boss.size,
+            ...stats,
+          });
+          localBossId.current = id;
+          /* broadcast boss spawn */
+          const q = getState('spawnQueue') || [];
+          setState('spawnQueue', [...q.slice(-40), { id, type: 'boss', position: g.enemies.length ? g.enemies[g.enemies.length - 1].position : randomEdgeSpawn(), size: ENEMY_DEFS.boss.size, ...stats }]);
+        } else if (aliveCount < maxAlive) {
+          const type = pickEnemyType(g.wave);
+          const stats = enemyStats(type, g.wave);
+          const id = Math.random().toString(36).slice(2, 10);
+          const pos = randomEdgeSpawn();
+          g.spawnEnemy({
+            id, type, position: pos,
+            size: ENEMY_DEFS[type].size,
+            ...stats,
+          });
+          const q = getState('spawnQueue') || [];
+          setState('spawnQueue', [...q.slice(-40), { id, type, position: pos, size: ENEMY_DEFS[type].size, ...stats }]);
+        }
+      }
+
+      /* ---- Apply incoming damage from clients ---- */
+      players.forEach((p) => {
+        if (p.id === myPlayer()?.id) return; // host's own damage is applied directly by the raycast
+        const list = p.getState('dmgOut') || [];
+        const lastT = lastProcessedDamage.current.get(p.id) || 0;
+        list.forEach((d) => {
+          if (d.t <= lastT) return;
+          lastProcessedDamage.current.set(p.id, d.t);
+          /* Apply the damage via the enemy registry. */
+          const enemy = g.enemies.find((e) => e.id === d.i);
+          if (!enemy) return;
+          /* Find the Rapier body for this enemy to route through the registry. */
+          for (const [handle, h] of enemiesByBody) {
+            if (h.id === d.i) {
+              const point = new THREE.Vector3(d.p[0], d.p[1], d.p[2]);
+              h.takeDamage(d.d, point);
+              break;
+            }
+          }
+        });
+      });
+
+      /* ---- Publish snapshot ---- */
+      publishAcc.current += dt;
+      if (publishAcc.current >= SNAPSHOT_INTERVAL) {
+        publishAcc.current = 0;
+        const snapshot = g.enemies.map((e) => {
+          /* Prefer the authoritative Rapier body position. */
+          let px = e.position[0], py = e.position[1], pz = e.position[2];
+          for (const [handle, h] of enemiesByBody) {
+            if (h.id === e.id) {
+              /* The body itself has translation, but the registry is built from
+                 the same ref that the Enemy component controls. Pull via Rapier world. */
+              break;
+            }
+          }
+          return { i: e.id, t: e.type, p: [px, py, pz], h: e.hp };
+        });
+        setState('enemySnapshot', snapshot, false);
+        setState('wave', g.wave, false);
+      }
+    } else {
+      /* ---------- CLIENT ---------- */
+      const snapshot = getState('enemySnapshot');
+      const remoteWave = getState('wave');
+      if (remoteWave && remoteWave !== g.wave) {
+        useGame.setState({ wave: remoteWave });
+      }
+      if (snapshot) {
+        const current = useGame.getState().enemies;
+        const map = new Map(current.map((e) => [e.id, e]));
+        let changed = false;
+        const next = [];
+        for (const e of snapshot) {
+          const existing = map.get(e.i);
+          if (existing) {
+            /* Update the position and HP in place so references stay stable. */
+            if (existing.position[0] !== e.p[0] || existing.position[1] !== e.p[1] || existing.position[2] !== e.p[2] || existing.hp !== e.h) {
+              changed = true;
+              existing.position = e.p;
+              existing.hp = e.h;
+            }
+            next.push(existing);
+          } else {
+            changed = true;
+            const def = ENEMY_DEFS[e.t];
+            next.push({
+              id: e.i, type: e.t, position: e.p, hp: e.h,
+              maxHp: def.hp, size: def.size,
+              damage: def.damage, score: def.score, speed: def.speed,
+            });
+          }
+        }
+        if (next.length !== current.length) changed = true;
+        if (changed) useGame.setState({ enemies: next });
+      }
+    }
+  });
+
+  /* ---- Damage queue maintenance for the local player (host reads this) ---- */
+  useEffect(() => {
+    if (host) return;
+    const id = setInterval(() => {
+      const me = myPlayer();
+      if (!me) return;
+      const list = me.getState('dmgOut') || [];
+      /* Roll off old entries so the array never grows unbounded. */
+      if (list.length > 30) me.setState('dmgOut', list.slice(-30), false);
+    }, 2000);
+    return () => clearInterval(id);
+  }, [host]);
+
+  return (
+    <group>
+      {enemies.map((e) => <Enemy key={e.id} data={e} isHostPlayer={host} />)}
+    </group>
+  );
+}
+
 function randomEdgeSpawn() {
   const edge = ARENA_HALF - 3;
   const along = (Math.random() * 2 - 1) * (ARENA_HALF - 5);
@@ -1603,73 +1937,6 @@ function pickEnemyType(wave) {
   return r < 0.35 ? 'drone' : (r < 0.72 ? 'wraith' : 'brute');
 }
 
-function EnemyManager() {
-  const enemies = useGame((s) => s.enemies);
-  const status = useGame((s) => s.status);
-  const spawnAcc = useRef(0);
-  const waveAcc = useRef(0);
-  const localIdx = useRef(0);
-  const players = usePlayersList();
-
-  const prevStatus = useRef('MENU');
-  useEffect(() => {
-    const prev = prevStatus.current; prevStatus.current = status;
-    if (status !== 'PLAYING') return;
-    // skip history: only enemies spawned from now on are ours (fixes the replay flood)
-    const q = getState('spawnQueue') || [];
-    localIdx.current = q.length ? (q[q.length - 1].n || 0) : 0;
-    if (prev === 'MENU' || prev === 'GAME_OVER') { spawnAcc.current = 0.4; waveAcc.current = 0; }
-  }, [status]);
-
-  useFrame((_, rawDt) => {
-    const deadSet = new Set();
-    const pickupSet = new Set();
-    players.forEach(p => {
-      (p.getState('kills') || []).forEach(k => deadSet.add(k));
-      (p.getState('pickups') || []).forEach(k => pickupSet.add(k));
-    });
-    window.deadEnemiesSet = deadSet;
-    window.collectedPickups = pickupSet;
-
-    const dt = Math.min(rawDt, 1 / 30);
-    const g = useGame.getState();
-    if (g.status !== 'PLAYING') return;
-
-    waveAcc.current += dt;
-    if (waveAcc.current >= WAVE_DURATION) {
-      waveAcc.current -= WAVE_DURATION;
-      g.nextWave();
-    }
-
-    if (isHost()) {
-      spawnAcc.current += dt;
-      const interval = Math.max(SPAWN_MIN_INTERVAL, 1.5 - (g.wave - 1) * 0.075);
-      const maxAlive = Math.min(MAX_ENEMIES, 6 + Math.floor((g.wave - 1) * 1.5));
-
-      if (spawnAcc.current >= interval) {
-        spawnAcc.current = 0;
-        if (g.enemies.length < maxAlive) {
-          const type = pickEnemyType(g.wave);
-          const stats = enemyStats(type, g.wave);
-          const newEnemy = { id: Math.random().toString(36).substr(2, 9), position: randomEdgeSpawn(), type, ...stats };
-          const q = getState('spawnQueue') || [];
-          setState('spawnQueue', [...q.slice(-29), { ...newEnemy, n: ++spawnSeq }]);
-        }
-      }
-    }
-
-    const queue = getState('spawnQueue') || [];
-    for (const e of queue) {
-      if (!(e.n > localIdx.current)) continue;
-      localIdx.current = e.n;
-      if (deadSet.has(e.id) || g.enemies.length >= MAX_ENEMIES + 4) continue;
-      g.spawnEnemy(e.position, e.type, e);
-    }
-  });
-
-  return <group>{enemies.map((e) => <Enemy key={e.id} data={e} />)}</group>;
-}
-
 /* ==================================================================
  *  PICKUPS
  * ================================================================== */
@@ -1680,13 +1947,6 @@ function Pickup({ data }) {
 
   useFrame((state) => {
     if (collected.current) return;
-    
-    if (window.collectedPickups?.has(data.id)) {
-       collected.current = true;
-       useGame.getState().removePickup(data.id);
-       return;
-    }
-
     const t = state.clock.elapsedTime;
     if (groupRef.current) {
       groupRef.current.rotation.y = t * 1.8;
@@ -1697,15 +1957,14 @@ function Pickup({ data }) {
     const dx = playerState.position.x - p[0];
     const dy = playerState.position.y - p[1];
     const dz = playerState.position.z - p[2];
-    
     if (dx * dx + dy * dy + dz * dz < 1.8 * 1.8) {
       collected.current = true;
-      const me = myPlayer();
-      if (me) me.setState('pickups', [...(me.getState('pickups') || []).slice(-60), data.id], true);
       const g = useGame.getState();
-      if (data.type === 'health') g.heal(def.amount);
+      if (def.kind === 'damage') g.grantDamageBoost(def.duration);
+      else if (def.kind === 'speed') g.grantSpeedBoost(def.duration);
+      else if (data.type === 'health') g.heal(def.amount);
       else g.giveAmmo(def.amount);
-      g.showPickupToast(def.label, data.type); sfx('pickup');
+      g.showPickupToast(def.label, def.kind || data.type);
       g.addExplosion([p[0], p[1], p[2]], def.color, 0.5, false);
       g.removePickup(data.id);
     }
@@ -1784,14 +2043,7 @@ function DamageNumber({ data }) {
 
   return (
     <sprite ref={ref} position={data.position} renderOrder={100}>
-      <spriteMaterial
-        map={tex}
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        toneMapped={false}
-        blending={THREE.AdditiveBlending}
-      />
+      <spriteMaterial map={tex} transparent depthWrite={false} depthTest={false} toneMapped={false} blending={THREE.AdditiveBlending} />
     </sprite>
   );
 }
@@ -1812,22 +2064,29 @@ function Tracer({ data }) {
   const glowRef = useRef(null);
   const life = useRef(0);
   const removeTracer = useGame((s) => s.removeTracer);
+
   const segs = useMemo(() => {
     if (!data.beam) return null;
     const a = new THREE.Vector3().fromArray(data.from), b = new THREE.Vector3().fromArray(data.to);
     const d = new THREE.Vector3().subVectors(b, a); const L = Math.max(0.1, d.length()); d.normalize();
     const up = Math.abs(d.y) > 0.95 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-    const p1 = new THREE.Vector3().crossVectors(d, up).normalize(), p2 = new THREE.Vector3().crossVectors(d, p1);
+    const p1 = new THREE.Vector3().crossVectors(d, up).normalize();
+    const p2 = new THREE.Vector3().crossVectors(d, p1);
     const N = Math.max(6, Math.min(22, Math.round(L / 2.5)));
     const pts = [];
     for (let i = 0; i <= N; i++) {
       const env = Math.sin(Math.PI * i / N) * 0.32;
-      pts.push(a.clone().addScaledVector(d, L * i / N).addScaledVector(p1, (Math.random() - 0.5) * 2 * env).addScaledVector(p2, (Math.random() - 0.5) * 2 * env));
+      pts.push(a.clone().addScaledVector(d, L * i / N)
+        .addScaledVector(p1, (Math.random() - 0.5) * 2 * env)
+        .addScaledVector(p2, (Math.random() - 0.5) * 2 * env));
     }
     return pts.slice(1).map((p, i) => {
       const q0 = pts[i], v = new THREE.Vector3().subVectors(p, q0);
-      return { mid: q0.clone().add(p).multiplyScalar(0.5), len: Math.max(0.01, v.length()),
-               quat: new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), v.normalize()) };
+      return {
+        mid: q0.clone().add(p).multiplyScalar(0.5),
+        len: Math.max(0.01, v.length()),
+        quat: new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), v.normalize()),
+      };
     });
   }, [data]);
 
@@ -1840,6 +2099,8 @@ function Tracer({ data }) {
     const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.normalize());
     return { mid: midpoint, quat: q, length: len };
   }, [data]);
+
+  const color = data.color || '#8df6ff';
 
   useFrame((_, dt) => {
     life.current += dt;
@@ -1857,12 +2118,13 @@ function Tracer({ data }) {
     <group>
       {segs.map((s, i) => (
         <group key={i} position={s.mid} quaternion={s.quat}>
-          <mesh frustumCulled={false}><boxGeometry args={[0.035, 0.035, s.len]} /><meshBasicMaterial color="#ffffff" toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
-          <mesh frustumCulled={false}><boxGeometry args={[0.15, 0.15, s.len]} /><meshBasicMaterial color="#5ce6ff" transparent opacity={0.45} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+          <mesh frustumCulled={false}><boxGeometry args={[0.05, 0.05, s.len]} /><meshBasicMaterial color="#ffffff" toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+          <mesh frustumCulled={false}><boxGeometry args={[0.22, 0.22, s.len]} /><meshBasicMaterial color="#5ce6ff" transparent opacity={0.45} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
         </group>
       ))}
     </group>
   );
+
   return (
     <group position={mid} quaternion={quat}>
       <mesh ref={coreRef} frustumCulled={false}>
@@ -1870,8 +2132,8 @@ function Tracer({ data }) {
         <meshBasicMaterial color="#ffffff" transparent opacity={1} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
       <mesh ref={glowRef} frustumCulled={false}>
-        <boxGeometry args={[0.09, 0.09, length]} />
-        <meshBasicMaterial color="#5ce6ff" transparent opacity={0.55} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
+        <boxGeometry args={[0.1, 0.1, length]} />
+        <meshBasicMaterial color={color} transparent opacity={0.55} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
     </group>
   );
@@ -1931,7 +2193,15 @@ function Projectiles() {
  * ================================================================== */
 function PerfGovernor({ onFps }) {
   const setDpr = useThree((s) => s.setDpr);
-  const perfRef = useRef({ frames: 0, time: 0, dpr: 1.25, lowStreak: 0 });
+  const quality = useSettings((s) => s.quality);
+  const perfRef = useRef({ frames: 0, time: 0, dpr: 1.0, lowStreak: 0 });
+
+  /* Apply quality tier to base DPR. */
+  useEffect(() => {
+    const target = quality === 'low' ? 0.75 : quality === 'medium' ? 1.0 : 1.25;
+    perfRef.current.dpr = target;
+    setDpr(target);
+  }, [quality, setDpr]);
 
   useFrame((_, dt) => {
     const p = perfRef.current;
@@ -1941,34 +2211,19 @@ function PerfGovernor({ onFps }) {
       const fps = p.frames / p.time;
       onFps && onFps(Math.round(fps));
 
-      if (fps < 42) {
-        p.lowStreak++;
-        if (p.lowStreak >= 1 && p.dpr > 0.7) {
-          p.dpr = Math.max(0.7, p.dpr - 0.2);
-          setDpr(p.dpr);
-        }
-      } else if (fps > 56) {
-        p.lowStreak = 0;
-        if (p.dpr < 1.25) {
-          p.dpr = Math.min(1.25, p.dpr + 0.1);
-          setDpr(p.dpr);
-        }
-      } else {
-        p.lowStreak = 0;
+      const cap = quality === 'low' ? 0.75 : quality === 'medium' ? 1.0 : 1.25;
+
+      if (fps < 42 && p.dpr > 0.7) {
+        p.dpr = Math.max(0.7, p.dpr - 0.2);
+        setDpr(p.dpr);
+      } else if (fps > 56 && p.dpr < cap) {
+        p.dpr = Math.min(cap, p.dpr + 0.1);
+        setDpr(p.dpr);
       }
       p.frames = 0;
       p.time = 0;
     }
   });
-  return null;
-}
-
-/* ==================================================================
- *  POST FX
- * ================================================================== */
-function PostFX() {
-  // Disabled temporarily to avoid the CDN dependency that crashes startup.
-  // Neon materials and the game's built-in lighting still render normally.
   return null;
 }
 
@@ -1986,10 +2241,8 @@ function Crosshair({ ads }) {
 function HitMarker({ marker }) {
   return (
     <div key={marker.id} className={'hitmarker' + (marker.kill ? ' kill' : '')}>
-      <i style={{ '--x': -1, '--y': -1 }} />
-      <i style={{ '--x': 1, '--y': -1 }} />
-      <i style={{ '--x': -1, '--y': 1 }} />
-      <i style={{ '--x': 1, '--y': 1 }} />
+      <i style={{ '--x': -1, '--y': -1 }} /><i style={{ '--x': 1, '--y': -1 }} />
+      <i style={{ '--x': -1, '--y': 1 }} /><i style={{ '--x': 1, '--y': 1 }} />
     </div>
   );
 }
@@ -2017,7 +2270,7 @@ function PickupToast() {
   const toast = useGame((s) => s.pickupToast);
   if (!toast) return null;
   return (
-    <div key={toast.id} className={'pickup-toast' + (toast.kind === 'ammo' ? ' ammo' : '')}>
+    <div key={toast.id} className={'pickup-toast' + (toast.kind === 'ammo' ? ' ammo' : toast.kind === 'damage' ? ' damage' : toast.kind === 'speed' ? ' speed' : '')}>
       {toast.label}
     </div>
   );
@@ -2029,15 +2282,47 @@ function KillFeed() {
   return (
     <div className="kill-feed">
       {feed.map((k) => (
-        <div key={k.id} className={'kill-line ' + (k.kfClass || '')}>
-          {k.label}
-        </div>
+        <div key={k.id} className={'kill-line ' + (k.kfClass || '')}>{k.label}</div>
       ))}
     </div>
   );
 }
 
-function Hud({ fps }) {
+function BossBar() {
+  const bossId = useGame((s) => s.bossEnemyId);
+  const enemies = useGame((s) => s.enemies);
+  if (!bossId) return null;
+  const boss = enemies.find((e) => e.id === bossId);
+  if (!boss) return null;
+  const pct = Math.max(0, Math.min(100, (boss.hp / boss.maxHp) * 100));
+  return (
+    <div className="boss-bar">
+      <div className="lbl">⚠ BOSS ⚠</div>
+      <div className="track"><div className="fill" style={{ width: pct + '%' }} /></div>
+    </div>
+  );
+}
+
+function BoostRow() {
+  const damageUntil = useGame((s) => s.damageBoostUntil);
+  const speedUntil = useGame((s) => s.speedBoostUntil);
+  const [now, setNow] = useState(performance.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(performance.now()), 200);
+    return () => clearInterval(id);
+  }, []);
+  const pills = [];
+  if (damageUntil > now) pills.push({ id: 'dmg', label: '×2 DAMAGE', cls: 'dmg' });
+  if (speedUntil > now) pills.push({ id: 'spd', label: 'HASTE', cls: 'spd' });
+  if (!pills.length) return null;
+  return (
+    <div className="boost-row">
+      {pills.map((p) => <div key={p.id} className={'boost-pill ' + p.cls}>{p.label}</div>)}
+    </div>
+  );
+}
+
+function Hud({ fps, onOpenSettings }) {
   const health = useGame((s) => s.health);
   const maxHealth = useGame((s) => s.maxHealth);
   const activeWeapon = useGame((s) => s.activeWeapon);
@@ -2051,7 +2336,7 @@ function Hud({ fps }) {
   const hitMarker = useGame((s) => s.hitMarker);
   const damageStamp = useGame((s) => s.damageStamp);
   const startedAt = useGame((s) => s.startedAt);
-
+  const showFps = useSettings((s) => s.showFps);
   const wpn = WEAPONS[activeWeapon];
 
   const [now, setNow] = useState(() => performance.now());
@@ -2063,9 +2348,9 @@ function Hud({ fps }) {
   const elapsed = Math.max(0, (now - startedAt) / 1000);
   const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
   const ss = String(Math.floor(elapsed % 60)).padStart(2, '0');
-
   const hpPct = Math.max(0, Math.min(100, (health / maxHealth) * 100));
   const low = health <= 35;
+  const isBossWave = wave > 0 && wave % 5 === 0;
 
   return (
     <div className="hud">
@@ -2075,7 +2360,9 @@ function Hud({ fps }) {
       <StreakFlash />
       <PickupToast />
       <KillFeed />
-      {fps > 0 && <div className="fps-meter">{fps} FPS</div>}
+      <BossBar />
+      <BoostRow />
+      {showFps && fps > 0 && <div className="fps-meter">{fps} FPS</div>}
 
       <div className="panel top-right">
         <div className="big">{score.toLocaleString()}</div>
@@ -2094,10 +2381,14 @@ function Hud({ fps }) {
         <div className="hpnum">{Math.ceil(health)}</div>
       </div>
 
+      <div className="wpn-slots">
+        {WEAPONS.map((w, i) => (
+          <div key={i} className={'wpn-slot' + (i === activeWeapon ? ' active' : '')}>{i + 1} · {w.name}</div>
+        ))}
+      </div>
+
       <div className="ammo">
-        <div className={'num' + (ammo === 0 ? ' empty' : '')}>
-          {ammo}<span className="res">/ ∞</span>
-        </div>
+        <div className={'num' + (ammo === 0 ? ' empty' : '')}>{ammo}<span className="res">/ ∞</span></div>
         {reloading
           ? <div className="reloading">{wpn.beam ? 'RECHARGING…' : 'RELOADING…'}</div>
           : ammo === 0
@@ -2105,14 +2396,98 @@ function Hud({ fps }) {
             : <div className="reloading dim">{ads ? 'ADS' : wpn.name}</div>}
       </div>
 
-      {wave > 1 && <div key={wave} className="wave-banner">WAVE {wave}</div>}
+      {wave > 1 && (
+        <div key={wave} className={'wave-banner' + (isBossWave ? ' boss-wave' : '')}>
+          {isBossWave ? `BOSS WAVE ${wave}` : `WAVE ${wave}`}
+          <span className="sub">{isBossWave ? 'ELIMINATE THE ELITE' : 'HOSTILES INBOUND'}</span>
+        </div>
+      )}
       {damageStamp > 0 && <div key={damageStamp} className="damage-flash" />}
       {low && <div className="low-hp-vignette" />}
     </div>
   );
 }
 
-function Menu() {
+/* ------- Settings Panel ------- */
+function SettingSlider({ label, value, min, max, step, onChange, format }) {
+  return (
+    <div className="setting-row">
+      <div className="lbl">{label}</div>
+      <div className="setting-slider">
+        <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+        <div className="val">{format ? format(value) : value}</div>
+      </div>
+    </div>
+  );
+}
+function SettingSeg({ label, value, options, onChange }) {
+  return (
+    <div className="setting-row">
+      <div className="lbl">{label}</div>
+      <div className="seg">
+        {options.map((o) => (
+          <button key={o} className={value === o ? 'active' : ''} onClick={() => onChange(o)}>{o.toUpperCase()}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+function SettingToggle({ label, value, onChange }) {
+  return (
+    <div className="setting-row">
+      <div className="lbl">{label}</div>
+      <div className="seg">
+        <button className={value ? 'active' : ''} onClick={() => onChange(true)}>ON</button>
+        <button className={!value ? 'active' : ''} onClick={() => onChange(false)}>OFF</button>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPanel({ onClose }) {
+  const settings = useSettings();
+  return (
+    <div className="screen" onClick={(e) => e.stopPropagation()}>
+      <div className="scanlines" />
+      <h2 className="subtitle">SETTINGS</h2>
+      <div className="settings-panel">
+        <SettingSlider
+          label="MOUSE SENSITIVITY"
+          value={settings.sensitivity}
+          min={0.2} max={3.0} step={0.05}
+          onChange={(v) => settings.update({ sensitivity: v })}
+          format={(v) => v.toFixed(2) + '×'}
+        />
+        <SettingSlider
+          label="FIELD OF VIEW"
+          value={settings.fov}
+          min={60} max={110} step={1}
+          onChange={(v) => settings.update({ fov: v })}
+          format={(v) => v + '°'}
+        />
+        <SettingSeg
+          label="GRAPHICS QUALITY"
+          value={settings.quality}
+          options={['low', 'medium', 'high']}
+          onChange={(v) => settings.update({ quality: v })}
+        />
+        <SettingToggle
+          label="SCREEN SHAKE"
+          value={settings.screenShake}
+          onChange={(v) => settings.update({ screenShake: v })}
+        />
+        <SettingToggle
+          label="SHOW FPS"
+          value={settings.showFps}
+          onChange={(v) => settings.update({ showFps: v })}
+        />
+      </div>
+      <button className="btn" onClick={onClose}>BACK</button>
+    </div>
+  );
+}
+
+function Menu({ onOpenSettings }) {
   const start = () => {
     useGame.getState().startGame();
     requestGamePointerLock();
@@ -2121,8 +2496,7 @@ function Menu() {
     <div className="screen menu">
       <div className="scanlines" />
       <h1 className="title">NEON<span>SWARM</span></h1>
-      <p className="tagline">ARENA SURVIVAL PROTOCOL // v1.5 MULTIPLAYER</p>
-
+      <p className="tagline">ARENA SURVIVAL PROTOCOL // v2.0</p>
       <div className="controls">
         <div><kbd>W A S D</kbd><span>MOVE</span></div>
         <div><kbd>MOUSE</kbd><span>LOOK</span></div>
@@ -2134,22 +2508,34 @@ function Menu() {
         <div><kbd>C</kbd><span>SLIDE</span></div>
         <div><kbd>1 2 3</kbd><span>SWITCH WEAPON</span></div>
         <div><kbd>R</kbd><span>RELOAD</span></div>
-        <div><kbd>ESC</kbd><span>PAUSE</span></div>
+        <div><kbd>ESC</kbd><span>MENU</span></div>
       </div>
-
-      <button className="btn" onClick={start}>INITIALISE</button>
-      <p className="hint">Invite your friend via the lobby link. Co-Op or Deathmatch.</p>
+      <div className="btn-row">
+        <button className="btn" onClick={start}>INITIALISE</button>
+        <button className="btn ghost" onClick={onOpenSettings}>SETTINGS</button>
+      </div>
+      <p className="hint">Boss waves every 5. Boost orbs drop from tough kills.</p>
     </div>
   );
 }
 
-function Pause() {
+function Pause({ onOpenSettings }) {
+  const players = usePlayersList();
+  const soloPlay = players.length <= 1;
   return (
-    <div className="screen pause">
+    <div className={'screen' + (soloPlay ? '' : ' soft')}>
       <div className="scanlines" />
       <h2 className="subtitle">PAUSED</h2>
-      <button className="btn" onClick={() => requestGamePointerLock()}>RESUME</button>
-      <button className="btn ghost" onClick={() => useGame.getState().backToMenu()}>ABORT TO MENU</button>
+      {!soloPlay && (
+        <p className="tagline" style={{ maxWidth: 500, textAlign: 'center' }}>
+          The battle continues — you're still vulnerable while paused.
+        </p>
+      )}
+      <div className="btn-row">
+        <button className="btn" onClick={() => requestGamePointerLock()}>RESUME</button>
+        <button className="btn ghost" onClick={onOpenSettings}>SETTINGS</button>
+        <button className="btn ghost" onClick={() => useGame.getState().backToMenu()}>ABANDON</button>
+      </div>
     </div>
   );
 }
@@ -2160,72 +2546,85 @@ function GameOver() {
   const wave = useGame((s) => s.wave);
   const startedAt = useGame((s) => s.startedAt);
   const endedAt = useGame((s) => s.endedAt);
-
   const total = Math.max(0, (endedAt - startedAt) / 1000);
   const mm = String(Math.floor(total / 60)).padStart(2, '0');
   const ss = String(Math.floor(total % 60)).padStart(2, '0');
-
-  const retry = () => {
-    useGame.getState().startGame();
-    requestGamePointerLock();
-  };
-
+  const retry = () => { useGame.getState().startGame(); requestGamePointerLock(); };
   return (
     <div className="screen gameover">
       <div className="scanlines" />
       <h2 className="subtitle red">SYSTEM FAILURE</h2>
       <p className="tagline">ALL VITAL SIGNS LOST</p>
-
       <div className="scoreboard">
         <div className="stat"><div className="v">{score.toLocaleString()}</div><div className="k">FINAL SCORE</div></div>
         <div className="stat"><div className="v">{kills}</div><div className="k">ELIMINATIONS</div></div>
         <div className="stat"><div className="v">{wave}</div><div className="k">WAVE REACHED</div></div>
         <div className="stat"><div className="v">{mm}:{ss}</div><div className="k">TIME SURVIVED</div></div>
       </div>
-
-      <button className="btn" onClick={retry}>RE-DEPLOY</button>
-      <button className="btn ghost" onClick={() => useGame.getState().backToMenu()}>MAIN MENU</button>
+      <div className="btn-row">
+        <button className="btn" onClick={retry}>RE-DEPLOY</button>
+        <button className="btn ghost" onClick={() => useGame.getState().backToMenu()}>MAIN MENU</button>
+      </div>
     </div>
   );
 }
 
 function UI({ fps }) {
   const status = useGame((s) => s.status);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const openSettings = () => setSettingsOpen(true);
+  const closeSettings = () => setSettingsOpen(false);
+
+  /* When settings are open, we show them on top of whatever else is showing. */
+  const showHud = (status === 'PLAYING');
+
   return (
     <div className="overlay">
-      {(status === 'PLAYING' || status === 'PAUSED') && <Hud fps={fps} />}
-      {status === 'MENU' && <Menu />}
-      {status === 'PAUSED' && <Pause />}
-      {status === 'GAME_OVER' && <GameOver />}
+      {showHud && !settingsOpen && <Hud fps={fps} onOpenSettings={openSettings} />}
+      {status === 'MENU' && !settingsOpen && <Menu onOpenSettings={openSettings} />}
+      {status === 'PLAYING' && !settingsOpen && (
+        /* In multiplayer, "pause" is just a soft overlay shown when pointer lock is released. */
+        <SoftPause onOpenSettings={openSettings} />
+      )}
+      {status === 'GAME_OVER' && !settingsOpen && <GameOver />}
+      {settingsOpen && <SettingsPanel onClose={closeSettings} />}
     </div>
   );
 }
 
+/* Detects pointer-lock release and shows the pause overlay without stopping the world. */
+function SoftPause({ onOpenSettings }) {
+  const [locked, setLocked] = useState(true);
+  const status = useGame((s) => s.status);
+  useEffect(() => {
+    const handler = () => setLocked(!!document.pointerLockElement);
+    document.addEventListener('pointerlockchange', handler);
+    handler();
+    return () => document.removeEventListener('pointerlockchange', handler);
+  }, []);
+  if (status !== 'PLAYING' || locked) return null;
+  return <Pause onOpenSettings={onOpenSettings} />;
+}
+
 /* ==================================================================
- *  GAME (Canvas root)
+ *  GAME
  * ================================================================== */
 function Game() {
   const [fps, setFps] = useState(0);
+  const quality = useSettings((s) => s.quality);
+  const dpr = quality === 'low' ? 0.8 : quality === 'medium' ? 1.05 : 1.25;
 
   return (
     <div className="game-root">
       <Canvas
-        dpr={1.25}
+        dpr={dpr}
         shadows={false}
-        gl={{
-          antialias: false,
-          powerPreference: 'high-performance',
-          stencil: false,
-          depth: true,
-          alpha: false,
-        }}
+        gl={{ antialias: false, powerPreference: 'high-performance', stencil: false, depth: true, alpha: false }}
         camera={{ fov: 78, near: 0.05, far: 400, position: [0, 2, 6] }}
-        onCreated={({ gl }) => {
-          gl.setClearColor('#05060a', 1);
-        }}
+        onCreated={({ gl }) => { gl.setClearColor('#05060a', 1); }}
       >
         <color attach="background" args={['#05060a']} />
-        <fog attach="fog" args={['#05060a', 40, 160]} />
+        {quality !== 'low' && <fog attach="fog" args={['#05060a', 40, 160]} />}
 
         <ambientLight intensity={0.5} color="#8fd8ff" />
         <hemisphereLight args={['#2b8fd8', '#120018', 0.7]} />
@@ -2246,7 +2645,6 @@ function Game() {
         <PickupField />
         <Projectiles />
         <DamageNumbers />
-        <PostFX />
       </Canvas>
 
       <UI fps={fps} />
@@ -2255,7 +2653,7 @@ function Game() {
 }
 
 /* ==================================================================
- *  BOOT & MULTIPLAYER INIT
+ *  BOOT
  * ================================================================== */
 const boot = document.getElementById('boot');
 if (boot) {
