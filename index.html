@@ -144,6 +144,34 @@ canvas{display:block;touch-action:none}
 .sval{min-width:46px;text-align:right;color:var(--cyan-soft)}
 .tog,.chip{font-family:var(--font-mono);cursor:pointer;padding:5px 13px;border:1px solid rgba(53,230,255,.4);background:transparent;color:var(--cyan-soft);letter-spacing:2px;font-size:11px}
 .tog.on,.chip.on{background:var(--cyan);color:#04121a}
+
+/* ---- v7: powerups, buffs, streaks, time warp ---- */
+.notify{position:absolute;left:50%;top:30%;transform:translateX(-50%);text-align:center;pointer-events:none;animation:notifyin 2.4s ease-out forwards;white-space:nowrap}
+.notify b{display:block;font-family:var(--font-display);font-size:clamp(20px,3.2vw,34px);font-weight:900;letter-spacing:10px;color:var(--nc);text-shadow:0 0 22px var(--nc),0 0 52px var(--nc)}
+.notify span{display:block;margin-top:8px;font-family:var(--font-mono);font-size:12px;letter-spacing:4px;color:#dff6ff;opacity:.85}
+@keyframes notifyin{0%{opacity:0;transform:translateX(-50%) scale(1.5)}10%{opacity:1;transform:translateX(-50%) scale(1)}78%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-14px)}}
+.wave-banner small{display:block;margin-top:10px;font-family:var(--font-mono);font-size:12px;font-weight:400;letter-spacing:6px;color:#9df3ff;text-shadow:0 0 14px rgba(53,230,255,.8);text-align:center}
+.buffs{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);display:flex;gap:18px;align-items:flex-end}
+.buff{width:150px;text-align:center;font-family:var(--font-mono);font-size:11px;letter-spacing:3px;color:var(--bc);text-shadow:0 0 12px var(--bc)}
+.buff .bt{display:flex;justify-content:space-between;gap:8px}
+.buff .bar{height:6px;margin-top:5px;background:rgba(255,255,255,.1);transform:skewX(-20deg);overflow:hidden}
+.buff .bar i{display:block;height:100%;background:var(--bc);box-shadow:0 0 14px var(--bc)}
+.od-overlay{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 130px rgba(255,176,32,.4);animation:pulse .55s ease-in-out infinite}
+.warp-overlay{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(130,90,255,0) 30%,rgba(120,70,255,.4) 100%)}
+.warp-overlay.slowed{backdrop-filter:saturate(.3) contrast(1.05);background:radial-gradient(ellipse at center,rgba(40,60,170,0) 22%,rgba(40,60,210,.52) 100%)}
+.warp-overlay .wl{position:absolute;left:50%;top:15%;transform:translateX(-50%);font-family:var(--font-mono);font-size:12px;letter-spacing:6px;color:#e0d4ff;text-shadow:0 0 14px #b06bff;white-space:nowrap}
+.combo{text-align:center}
+.combo .perk{font-family:var(--font-mono);font-size:10px;font-weight:400;letter-spacing:3px;color:#fff;opacity:.85;text-shadow:none;margin-top:5px}
+.combo .tb{display:block;width:150px;height:4px;margin:8px auto 0;background:rgba(255,255,255,.14);transform:skewX(-20deg);overflow:hidden}
+.combo .tb i{display:block;height:100%;background:currentColor;box-shadow:0 0 10px currentColor}
+.health .sh{color:#4d9bff;text-shadow:0 0 10px #4d9bff}
+.health .shield{height:5px;margin-bottom:5px;transform:skewX(-20deg);background:rgba(77,155,255,.18);overflow:hidden}
+.health .shield i{display:block;height:100%;background:#4d9bff;box-shadow:0 0 12px #4d9bff}
+.loot{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:6px 42px;margin:0 0 6px;padding:6px 34px;font-family:var(--font-mono);font-size:11px;letter-spacing:2px}
+.loot div{display:flex;gap:12px;align-items:baseline}
+.loot b{min-width:96px;letter-spacing:3px}
+.loot span{opacity:.6}
+@media (max-width:760px){.loot{grid-template-columns:1fr}.buffs{bottom:110px}}
 </style>
 
 
@@ -206,6 +234,11 @@ const RELOAD_TIME = 1.35;
 const ENEMY_TOUCH_RADIUS = 1.35;
 const WAVE_DURATION = 22;
 const COMBO_TIMEOUT = 3.2;
+const WARP_SCALE = 0.28;              // speed of the world (and everyone but the collector) during Time Warp
+const WARP_DURATION = 7;              // real-time seconds
+const OVERDRIVE_DURATION = 10;
+const SHIELD_DURATION = 14, SHIELD_AMOUNT = 60;
+const NOVA_RADIUS = 26, NOVA_DAMAGE = 170;
 
 const WEAPONS = [
   { name: 'SMG', damage: 25, interval: 0.095, mag: 30, spread: 0.018, range: 250, projectiles: 1 },
@@ -254,9 +287,37 @@ function enemyStats(type, wave) {
 }
 
 const PICKUP_DEFS = {
-  health: { color: '#22ff88', wire: '#9dffcb', amount: 25, label: '+ INTEGRITY' },
-  ammo:   { color: '#35e6ff', wire: '#b6f6ff', amount: 20, label: '+ PLASMA' },
+  health:    { color: '#22ff88', wire: '#9dffcb', amount: 25, label: '+ INTEGRITY' },
+  ammo:      { color: '#35e6ff', wire: '#b6f6ff', amount: 20, label: '+ PLASMA' },
+  overdrive: { color: '#ffb020', wire: '#ffe2a0', power: true, label: 'OVERDRIVE' },
+  warp:      { color: '#b06bff', wire: '#e0ccff', power: true, label: 'TIME WARP' },
+  shield:    { color: '#4d9bff', wire: '#b4d4ff', power: true, label: 'AEGIS SHIELD' },
+  nova:      { color: '#ff3355', wire: '#ffb0bd', power: true, label: 'NOVA BLAST' },
 };
+const POWER_WEIGHTS = { overdrive: 34, warp: 24, shield: 24, nova: 18 };
+const PICKUP_TTL = { health: 20, ammo: 20, overdrive: 30, warp: 30, shield: 30, nova: 30 };   // seconds on the floor
+function weightedPick(w) {
+  let total = 0; for (const k in w) total += w[k];
+  let r = Math.random() * total;
+  for (const k in w) { r -= w[k]; if (r <= 0) return k; }
+  return Object.keys(w)[0];
+}
+
+/* Permanent per-wave upgrades: derived from the wave number, so they are identical for everyone and join-safe. */
+function perksFor(wave) {
+  const L = Math.min(Math.max(0, wave - 1), 14);
+  return { L, maxHp: 100 + L * 6, dmg: 1 + L * 0.04, reload: 1 + L * 0.05, dashCd: Math.max(0.5, 1 - L * 0.04), magnet: 3.5 + L * 0.35 };
+}
+/* Kill-streak boosts: only active while the streak is alive. */
+const STREAK_TIERS = [
+  { at: 0,  name: '',        fire: 1,    dmg: 1,   speed: 1,    heal: 0, refund: 0, color: '#9df3ff' },
+  { at: 5,  name: 'FLOW',    fire: 1.15, dmg: 1,   speed: 1.08, heal: 0, refund: 0, color: '#35e6ff' },
+  { at: 10, name: 'FRENZY',  fire: 1.3,  dmg: 1.2, speed: 1.12, heal: 2, refund: 1, color: '#ffb020' },
+  { at: 20, name: 'RAMPAGE', fire: 1.5,  dmg: 1.4, speed: 1.18, heal: 3, refund: 1, color: '#ff2bd6' },
+  { at: 35, name: 'GODLIKE', fire: 1.75, dmg: 1.7, speed: 1.25, heal: 4, refund: 2, color: '#ff3355' },
+].map((t, i) => ({ ...t, idx: i }));
+function streakTier(c) { let t = STREAK_TIERS[0]; for (let i = 1; i < STREAK_TIERS.length; i++) if (c >= STREAK_TIERS[i].at) t = STREAK_TIERS[i]; return t; }
+const comboTimeout = (c) => COMBO_TIMEOUT + Math.min(2, c * 0.05);   // longer streaks get a little more breathing room
 
 /* ==================================================================
  *  REGISTRY
@@ -266,12 +327,16 @@ const playerState = {
   forward: new THREE.Vector3(0, 0, -1),
   speed: 0,
   alive: true,
+  mods: { fire: 1, dmg: 1, speed: 1, reload: 1, dashCd: 1 },   // recomputed every frame from perks + streak + buffs
+  magnet: 3.5, comboT: 0, comboMax: COMBO_TIMEOUT,
 };
 
 const enemiesByBody = new Map();
 const clearRegistry = () => enemiesByBody.clear();
 
 const screenFX = { shake: 0, fovKick: 0, chroma: 0 };
+const buffs = { overdrive: 0, shield: 0 };                                   // local buffs, real-time seconds remaining
+const timeFX = { world: 1, me: 1, warps: new Map(), names: new Map() };      // warps: ownerId -> seconds left. world = enemy/spawn clock, me = my own sim clock
 const SETTINGS_KEY = 'neonswarm.settings.v1';
 const DEFAULT_SETTINGS = { master: 0.7, sfx: 1, mute: false, quality: 'HIGH', scale: 1.25, adaptive: true, fov: 78, sens: 1, shake: 1, fps: false, dmgNums: true, stars: true };
 const useSettings = create((set) => {
@@ -290,7 +355,7 @@ const S = () => useSettings.getState();
 const addShake = (amount) => { screenFX.shake = Math.min(0.8, screenFX.shake + amount * S().shake); };
 
 /* ---------- SYNTH AUDIO v2: layered transient + crack + body + sub + reverb tail ---------- */
-let AC = null, master = null, rvIn = null, noiseBuf = null, beamNodes = null;
+let AC = null, master = null, rvIn = null, noiseBuf = null, beamNodes = null, warpLP = null;
 function applyAudio() { if (master) master.gain.value = S().mute ? 0 : S().master * S().sfx * 0.6; }
 function ensureAudio() {
   if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
@@ -298,7 +363,8 @@ function ensureAudio() {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     const comp = AC.createDynamicsCompressor();
     comp.threshold.value = -16; comp.ratio.value = 6; comp.attack.value = 0.002; comp.release.value = 0.12;
-    master = AC.createGain(); master.connect(comp); comp.connect(AC.destination);
+    master = AC.createGain(); warpLP = AC.createBiquadFilter(); warpLP.type = 'lowpass'; warpLP.frequency.value = 22000;
+    master.connect(warpLP); warpLP.connect(comp); comp.connect(AC.destination);
     noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -354,6 +420,12 @@ const SFX = {
   pickup:() => { tone('triangle', 660, 660, 0.09, 0.25); tone('triangle', 990, 990, 0.1, 0.25, 0.07); tone('triangle', 1320, 1320, 0.16, 0.25, 0.14); },
   pad:   () => { tone('sine', 180, 720, 0.28, 0.5); noise(0.25, 0.4, 500, 3200, 'bandpass'); },
   wave:  () => { tone('sawtooth', 70, 140, 0.8, 0.3, 0, 0.3); tone('sine', 50, 50, 0.8, 0.5); },
+  overdrive: () => { for (let i = 0; i < 5; i++) tone('sawtooth', 300 + i * 160, 520 + i * 220, 0.12, 0.26, i * 0.045, 0.25); noise(0.4, 0.5, 400, 5000, 'bandpass', 0, 1.2, 0.3); tone('sine', 60, 200, 0.4, 0.8); },
+  warp:  () => { tone('sine', 900, 70, 1.1, 0.7, 0, 0.5); tone('triangle', 1400, 140, 0.9, 0.25, 0.05, 0.4); noise(0.9, 0.5, 4000, 200, 'bandpass', 0, 0.9, 0.5); tone('sine', 48, 30, 1.2, 1.0); },
+  warpEnd: () => { tone('sine', 120, 900, 0.5, 0.5, 0, 0.4); noise(0.5, 0.4, 200, 4500, 'bandpass', 0, 1, 0.3); },
+  shield: () => { for (let i = 0; i < 3; i++) tone('triangle', 520 + i * 260, 520 + i * 260, 0.35, 0.2, i * 0.06, 0.4); noise(0.3, 0.25, 3000, 6000, 'highpass'); },
+  nova:  () => { noise(0.9, 1, 2200, 50, 'lowpass', 0, 0.7, 0.7); tone('sine', 140, 20, 1.0, 1.4, 0, 0.4); tone('sawtooth', 600, 40, 0.5, 0.5); noise(0.25, 0.8, 6000, 800, 'bandpass'); },
+  streak: () => { for (let i = 0; i < 3; i++) tone('square', 440 * Math.pow(1.26, i), 450 * Math.pow(1.26, i), 0.1, 0.2, i * 0.06, 0.2); tone('sine', 90, 45, 0.3, 0.6); },
 };
 function sfx(n) { if (!AC || S().mute) return; try { SFX[n] && SFX[n](); } catch {} }
 function beamSound(on) {
@@ -383,7 +455,7 @@ const enemyHandlers = new Map();   // id -> takeDamage(amount, point, byId, quie
 const ghostTargets = new Map();    // id -> snapshot target     (clients only)
 const remoteLive = new Map();      // playerId -> {x,y,z}       live remote players
 let killLog = [], pkList = [], dmgTotals = {}, hitLog = [];
-let killSeq = Date.now(), pkSeq = Date.now(), hitSeq = Date.now(), beamTick = 0;
+let killSeq = Date.now(), pkSeq = Date.now(), hitSeq = Date.now(), beamTick = 0, lootSince = 0;
 const safeIsHost = () => { try { return isHost(); } catch { return true; } };
 const safeSet = (k, v, rel = true) => { try { setState(k, v, rel); } catch {} };
 const myId = () => { try { return myPlayer()?.id ?? 'me'; } catch { return 'me'; } };
@@ -391,6 +463,7 @@ const myId = () => { try { return myPlayer()?.id ?? 'me'; } catch { return 'me';
 function handleKill(ev, me) {
   if (ev.by && ev.by === me) {
     addShake(0.05 + (ENEMY_DEFS[ev.type]?.size || 0.5) * 0.05);
+    if (!safeIsHost()) { useGame.getState().registerHit(true); sfx('kill'); }   // clients get the same kill feedback the host gets
     useGame.getState().registerKill(ev.score, ev.type);
   }
 }
@@ -401,10 +474,36 @@ function emitKill(ev) {            // host only
   killLog = [...killLog.slice(-11), { ...ev, n: ++killSeq }];
   safeSet('kl', killLog);
   handleKill(ev, myId());
-  if (ev.by && Math.random() < 0.22) {
-    pkList = [...pkList.slice(-19), { id: 'p' + (++pkSeq), ph: Math.random() * 6, x: ev.x, y: Math.max(0.9, ev.y), z: ev.z, type: Math.random() < 0.5 ? 'health' : 'ammo' }];
-    safeSet('pk', pkList);
+  if (ev.by) rollLoot(ev);
+}
+/* ---- loot (host only) ---- */
+function dropLoot(type, x, y, z) {
+  const id = 'p' + (++pkSeq).toString(36) + Math.random().toString(36).slice(2, 5);   // random suffix: ids can never collide after a host change
+  pkList = [...pkList.slice(-19), { id, ph: Math.random() * 6, x: +x.toFixed(2), y: +Math.min(1.8, Math.max(0.9, y)).toFixed(2), z: +z.toFixed(2), type, born: Date.now() }];
+}
+function rollLoot(ev) {
+  lootSince++;
+  const powers = pkList.filter((p) => PICKUP_DEFS[p.type]?.power).length;
+  const sp = () => (Math.random() - 0.5) * 2.6;
+  let dropped = false;
+  if (ev.type === 'titan') {                                   // bosses always pay out
+    dropLoot(weightedPick(POWER_WEIGHTS), ev.x + sp(), ev.y, ev.z + sp());
+    dropLoot(weightedPick(POWER_WEIGHTS), ev.x + sp(), ev.y, ev.z + sp());
+    dropLoot('health', ev.x + sp(), ev.y, ev.z + sp());
+    lootSince = 0; dropped = true;
+  } else if ((Math.random() < ({ drone: 0.035, wraith: 0.07, brute: 0.16 }[ev.type] || 0.04) || lootSince >= 26) && powers < 3) {
+    dropLoot(weightedPick(POWER_WEIGHTS), ev.x, ev.y, ev.z);   // tougher enemies drop more; pity timer after 26 kills
+    lootSince = 0; dropped = true;
+  } else if (Math.random() < 0.22) {
+    dropLoot(Math.random() < 0.5 ? 'health' : 'ammo', ev.x, ev.y, ev.z); dropped = true;
   }
+  if (dropped) safeSet('pk', pkList);
+}
+function supplyDrop() {                                        // every new wave
+  const a = Math.random() * Math.PI * 2, r = 6 + Math.random() * 22;
+  dropLoot(weightedPick(POWER_WEIGHTS), Math.cos(a) * r, 1.2, Math.sin(a) * r);
+  dropLoot('health', Math.cos(a + 0.5) * r * 0.9, 1.2, Math.sin(a + 0.5) * r * 0.9);
+  safeSet('pk', pkList);
 }
 function hurtRemote(id, amt) { dmgTotals[id] = (dmgTotals[id] || 0) + amt; safeSet('dmg', { ...dmgTotals }); }
 
@@ -427,7 +526,20 @@ function dealDamage(id, dmg, pt, quiet) {
   const g = useGame.getState();
   if (!quiet) { g.addDamageNumber([pt.x, pt.y + 0.3, pt.z], String(Math.round(dmg)), '#ffffff'); g.registerHit(false); sfx('hit'); }
   const gt = ghostTargets.get(id); if (gt) gt.flash = 1;
-  hitLog = [...hitLog.slice(-29), { n: ++hitSeq, id, d: dmg, x: +pt.x.toFixed(1), y: +pt.y.toFixed(1), z: +pt.z.toFixed(1) }];
+  const pend = pendingHits.get(id);
+  if (pend) { pend.d += dmg; pend.x = pt.x; pend.y = pt.y; pend.z = pt.z; } else pendingHits.set(id, { d: dmg, x: pt.x, y: pt.y, z: pt.z });
+}
+const pendingHits = new Map();
+let lastHitFlush = 0;
+function flushHits() {                // called every frame; sends at most 20 updates/sec no matter how fast you fire (Overdrive!)
+  if (!pendingHits.size) return;
+  const now = performance.now();
+  if (now - lastHitFlush < 50) return;
+  lastHitFlush = now;
+  const add = [];
+  pendingHits.forEach((v, id) => add.push({ n: ++hitSeq, id, d: Math.round(v.d), x: +v.x.toFixed(1), y: +v.y.toFixed(1), z: +v.z.toFixed(1) }));
+  pendingHits.clear();
+  hitLog = [...hitLog, ...add].slice(-60);
   try { myPlayer()?.setState('hits', hitLog, true); } catch {}
 }
 
@@ -475,6 +587,7 @@ const useGame = create((set, get) => ({
   reloading: false, ads: false,
   score: 0, kills: 0, wave: 1,
   combo: 0, comboTier: 0,
+  shield: 0, notice: null,
   enemies: [], netEnemies: 0, tracers: [], explosions: [], pickups: [],
   damageNumbers: [], killFeed: [],
   hitMarker: null,
@@ -492,9 +605,11 @@ const useGame = create((set, get) => ({
       me.setState('lastHit', null, true);
       me.setState('dead', false, true);
     }
+    resetBuffs(); cancelWarp();
     screenFX.shake = 0; screenFX.fovKick = 0; screenFX.chroma = 0;
     set({
       status: 'PLAYING',
+      maxHealth: 100, shield: 0, notice: null,
       health: 100, activeWeapon: 0, ammoBy: WEAPONS.map((w) => w.mag), ammo: WEAPONS[0].mag, magSize: WEAPONS[0].mag, reloading: false, ads: false,
       score: 0, kills: 0, wave: 1, combo: 0, comboTier: 0,
       enemies: (window.__mpCount > 1 ? get().enemies : []), tracers: [], explosions: [], pickups: [],
@@ -507,7 +622,7 @@ const useGame = create((set, get) => ({
   pauseGame: () => { if (get().status !== 'PLAYING') return; resetInput(); set({ status: 'PAUSED', ads: false }); },
   resumeGame: () => { if (get().status !== 'PAUSED') return; set({ status: 'PLAYING' }); },
   backToMenu: () => {
-    clearRegistry(); resetInput();
+    clearRegistry(); resetInput(); resetBuffs(); cancelWarp();
     set({ status: 'MENU', enemies: (window.__mpCount > 1 ? get().enemies : []), tracers: [], explosions: [], pickups: [], damageNumbers: [], killFeed: [], ads: false });
   },
 
@@ -520,12 +635,15 @@ const useGame = create((set, get) => ({
   damagePlayer: (amount) => {
     const s = get();
     if (!(s.status === 'PLAYING' || (s.status === 'PAUSED' && window.__mpCount > 1)) || playerState.invuln) return;
-    const health = Math.max(0, s.health - amount);
-    set({ health, damageStamp: nextId() });
-    addShake(0.16); sfx('hurt');
-    screenFX.chroma = Math.min(1.5, screenFX.chroma + 0.6);
+    let rem = amount, shield = s.shield;
+    if (shield > 0) { const ab = Math.min(shield, rem); shield -= ab; rem -= ab; }   // Aegis soaks damage first
+    const health = Math.max(0, s.health - rem);
+    set({ health, shield, damageStamp: nextId() });
+    addShake(rem > 0 ? 0.16 : 0.07); sfx(rem > 0 ? 'hurt' : 'hit');
+    screenFX.chroma = Math.min(1.5, screenFX.chroma + (rem > 0 ? 0.6 : 0.25));
     if (health <= 0) {
-      set({ status: 'GAME_OVER', endedAt: performance.now(), ads: false });
+      resetBuffs(); cancelWarp();
+      set({ status: 'GAME_OVER', endedAt: performance.now(), ads: false, shield: 0 });
       const me = myPlayer();
       if (me) me.setState('dead', true, true);
       if (document.pointerLockElement) document.exitPointerLock();
@@ -539,6 +657,8 @@ const useGame = create((set, get) => ({
 
   heal: (amount) => set((s) => ({ health: Math.min(s.maxHealth, s.health + amount) })),
   giveAmmo: (amount) => set((s) => ({ ammo: Math.min(s.magSize, s.ammo + amount) })),
+  giveShield: (v) => set((s) => ({ shield: Math.max(s.shield, v) })),
+  notify: (text, sub, color) => set({ notice: { id: nextId(), text, sub, color } }),
 
   registerHit: (kill) => set({ hitMarker: { id: nextId(), kill } }),
 
@@ -546,6 +666,7 @@ const useGame = create((set, get) => ({
     const s = get();
     const nextCombo = s.combo + 1;
     const tier = comboMultiplier(nextCombo);
+    const st = streakTier(nextCombo);
     const gained = Math.round(basePoints * tier);
     const def = ENEMY_DEFS[enemyType] || { label: 'HOSTILE', kfClass: '' };
     const feedEntry = {
@@ -557,8 +678,11 @@ const useGame = create((set, get) => ({
     set({
       combo: nextCombo, comboTier: tier,
       score: s.score + gained, kills: s.kills + 1, killFeed: feed,
+      // streak perks: kills heal you and refund rounds while the streak is alive
+      health: s.health > 0 ? Math.min(s.maxHealth, s.health + st.heal) : s.health,
+      ammo: (buffs.overdrive > 0 || !st.refund) ? s.ammo : Math.min(s.magSize, s.ammo + st.refund),
     });
-    if (nextCombo > 1 && nextCombo % 5 === 0) {
+    if (nextCombo > 1 && nextCombo % 5 === 0 && !STREAK_TIERS.some((t) => t.at === nextCombo)) {
       set({ streakFlash: { id: nextId(), value: nextCombo, tier } });
     }
   },
@@ -577,10 +701,10 @@ const useGame = create((set, get) => ({
     set((s) => ({ pickups: [...s.pickups, { id: 'p' + Math.random().toString(36).slice(2, 8), ph: Math.random() * 6, position, type }] })),
   removePickup: (id) => set((s) => ({ pickups: s.pickups.filter((p) => p.id !== id) })),
 
-  showPickupToast: (label, kind) => set({ pickupToast: { id: nextId(), label, kind } }),
+  showPickupToast: (label, kind, color) => set({ pickupToast: { id: nextId(), label, kind, color } }),
 
-  addTracer: (from, to, beam) =>
-    set((s) => ({ tracers: [...s.tracers.slice(-40), { id: nextId(), from, to, beam: !!beam }] })),
+  addTracer: (from, to, beam, hot) =>
+    set((s) => ({ tracers: [...s.tracers.slice(-40), { id: nextId(), from, to, beam: !!beam, hot: !!hot }] })),
   removeTracer: (id) => set((s) => ({ tracers: s.tracers.filter((t) => t.id !== id) })),
 
   addExplosion: (position, color, size, ring) =>
@@ -603,6 +727,110 @@ function comboMultiplier(combo) {
   if (combo >= 6) return 2;
   if (combo >= 3) return 1.5;
   return 1;
+}
+
+/* ==================================================================
+ *  POWERUPS, STREAK BOOSTS & TIME WARP
+ * ================================================================== */
+let warpSeq = Date.now(), fxSeq = Date.now();
+function emitFx(kind, p) {              // one-shot visual event for the other players
+  try { myPlayer()?.setState('fx', { n: ++fxSeq, k: kind, x: +p.x.toFixed(1), y: +p.y.toFixed(1), z: +p.z.toFixed(1) }, true); } catch {}
+}
+function activateWarp() {
+  timeFX.warps.set(myId(), WARP_DURATION);
+  try { myPlayer()?.setState('warp', { n: ++warpSeq, dur: WARP_DURATION }, true); } catch {}
+}
+function cancelWarp() {
+  const id = myId();
+  if (!timeFX.warps.has(id)) return;
+  timeFX.warps.delete(id);
+  try { myPlayer()?.setState('warp', { n: ++warpSeq, dur: 0 }, true); } catch {}
+}
+function resetBuffs() {
+  buffs.overdrive = 0; buffs.shield = 0;
+  try { myPlayer()?.setState('buf', 0, true); } catch {}
+}
+function triggerNova(origin) {
+  const g = useGame.getState();
+  enemyView.forEach((v) => {            // enemyView exists on host AND clients, so Nova works for everybody
+    if (v.dy) return;
+    const d = Math.hypot(v.x - origin.x, v.y - origin.y, v.z - origin.z);
+    if (d > NOVA_RADIUS + v.r) return;
+    dealDamage(v.id, NOVA_DAMAGE * (1.15 - 0.5 * Math.min(1, d / NOVA_RADIUS)), { x: v.x, y: v.y, z: v.z }, true);
+  });
+  g.addExplosion([origin.x, origin.y - 0.4, origin.z], '#ff3355', NOVA_RADIUS / 4, true);
+  g.addExplosion([origin.x, origin.y - 0.4, origin.z], '#ffffff', NOVA_RADIUS / 9, true);
+  screenFX.fovKick = 18; screenFX.chroma = 1.5; addShake(0.45); sfx('nova');
+  emitFx('nova', origin);
+}
+function applyPickup(type) {
+  const g = useGame.getState(), def = PICKUP_DEFS[type], pos = playerState.position;
+  switch (type) {
+    case 'health': g.heal(def.amount); break;
+    case 'ammo': g.giveAmmo(def.amount); break;
+    case 'overdrive':
+      buffs.overdrive = Math.min(OVERDRIVE_DURATION * 1.6, buffs.overdrive + OVERDRIVE_DURATION);
+      screenFX.fovKick = 14; addShake(0.25); sfx('overdrive'); emitFx('overdrive', pos); break;
+    case 'warp':
+      activateWarp(); screenFX.chroma = 1.5; addShake(0.3); sfx('warp');
+      g.addExplosion([pos.x, pos.y - 0.5, pos.z], def.color, 4, true); emitFx('warp', pos); break;
+    case 'shield':
+      g.giveShield(SHIELD_AMOUNT); buffs.shield = SHIELD_DURATION; sfx('shield'); emitFx('shield', pos); break;
+    case 'nova': triggerNova(pos); break;
+  }
+  g.showPickupToast(def.label, type, def.color); sfx('pickup');
+}
+
+/* One shared clock. The Time Warp collector writes {n,dur} to their player state; every client (and the host)
+   runs the same countdown, so enemies, spawns, remote players and the local sim all slow together, except the collector. */
+function TimeKeeper() {
+  const players = usePlayersList();
+  const list = useRef(players); list.current = players;
+  const seenWarp = useRef(new Map()), seenFx = useRef(new Map()), wasAny = useRef(false);
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, 0.1), me = myPlayer(), mid = myId(), g = useGame.getState();
+    const ids = new Set();
+    for (const p of list.current) {
+      ids.add(p.id);
+      let nm = 'PLAYER'; try { nm = String(p.getProfile()?.name || 'PLAYER').toUpperCase().slice(0, 14); } catch {}
+      timeFX.names.set(p.id, nm);
+      if (me && p.id === me.id) continue;
+      const w = p.getState('warp'), fx = p.getState('fx');
+      if (!seenWarp.current.has(p.id)) seenWarp.current.set(p.id, w ? w.n : 0);          // history on first sight is never replayed
+      else if (w && w.n !== seenWarp.current.get(p.id)) {
+        seenWarp.current.set(p.id, w.n);
+        if (w.dur > 0) {
+          timeFX.warps.set(p.id, w.dur);
+          if (g.status === 'PLAYING') { sfx('warp'); g.notify('TIME DILATION', nm + ' BENT TIME', '#b06bff'); screenFX.chroma = Math.min(1.5, screenFX.chroma + 0.8); }
+        } else timeFX.warps.delete(p.id);
+      }
+      if (!seenFx.current.has(p.id)) seenFx.current.set(p.id, fx ? fx.n : 0);
+      else if (fx && fx.n !== seenFx.current.get(p.id)) {
+        seenFx.current.set(p.id, fx.n);
+        const def = PICKUP_DEFS[fx.k];
+        if (def) {
+          const big = fx.k === 'nova';
+          g.addExplosion([fx.x, fx.y, fx.z], def.color, big ? NOVA_RADIUS / 4 : 1.6, true);
+          if (big && (g.status === 'PLAYING')) { sfx('nova'); addShake(0.2); }
+        }
+      }
+    }
+    timeFX.warps.forEach((rem, id) => {
+      const r = rem - dt;
+      if (r <= 0 || (id !== mid && !ids.has(id))) timeFX.warps.delete(id);              // expired, or owner left the room
+      else timeFX.warps.set(id, r);
+    });
+    const any = timeFX.warps.size > 0, mine = timeFX.warps.has(mid);
+    if (wasAny.current && !any && g.status === 'PLAYING') sfx('warpEnd');
+    wasAny.current = any;
+    const k = 1 - Math.exp(-12 * dt);                                                    // quick ease in/out of the slowdown
+    timeFX.world += ((any ? WARP_SCALE : 1) - timeFX.world) * k;
+    timeFX.me += ((any && !mine ? WARP_SCALE : 1) - timeFX.me) * k;
+    if (Math.abs(timeFX.world - 1) < 0.004) timeFX.world = 1;
+    if (Math.abs(timeFX.me - 1) < 0.004) timeFX.me = 1;
+    if (warpLP && AC) warpLP.frequency.value = 22000 * Math.pow(0.04, (1 - timeFX.world) / (1 - WARP_SCALE));   // muffled audio while time is bent
+  }, -2);
+  return null;
 }
 
 /* ==================================================================
@@ -860,7 +1088,7 @@ function RemotePlayers() {
 }
 
 function RemotePlayer({ player }) {
-  const root = useRef(null), model = useRef(null), legL = useRef(null), legR = useRef(null);
+  const root = useRef(null), model = useRef(null), legL = useRef(null), legR = useRef(null), aura = useRef(null), auraM = useRef(null);
   const walk = useRef(0), init = useRef(false);
   const color = player.getProfile()?.color?.hex || '#ff2bd6';
   useFrame((_, rawDt) => {
@@ -877,6 +1105,12 @@ function RemotePlayer({ player }) {
     if (legL.current) legL.current.rotation.x = Math.sin(walk.current) * 0.9 * sw;
     if (legR.current) legR.current.rotation.x = -Math.sin(walk.current) * 0.9 * sw;
     if (model.current) { model.current.rotation.y = rot ? rot.yaw : 0; model.current.position.y = Math.abs(Math.sin(walk.current)) * 0.05 * sw; }
+    if (aura.current && auraM.current) {     // buff aura: violet = holds Time Warp, amber = Overdrive, blue = Aegis
+      const fl = player.getState('buf') | 0, wp = timeFX.warps.has(player.id);
+      const c = wp ? 0xb06bff : (fl & 1) ? 0xffb020 : (fl & 2) ? 0x4d9bff : 0;
+      aura.current.visible = !!c;
+      if (c) { auraM.current.material.color.setHex(c); aura.current.rotation.y += dt * 4; const s = 1 + Math.sin(performance.now() * 0.008) * 0.08; aura.current.scale.set(s, 1, s); }
+    }
   });
   const armor = <meshStandardMaterial color="#141c2e" metalness={0.85} roughness={0.35} />;
   const glow = <meshBasicMaterial color={color} toneMapped={false} />;
@@ -901,6 +1135,9 @@ function RemotePlayer({ player }) {
         <mesh position={[0.3, 1.1, -0.18]}><boxGeometry args={[0.12, 0.12, 0.42]} />{armor}</mesh>
         <mesh position={[0.22, 1.12, -0.5]}><boxGeometry args={[0.08, 0.12, 0.6]} /><meshStandardMaterial color="#0a0f18" metalness={1} roughness={0.25} /></mesh>
         <mesh position={[0.22, 1.12, -0.82]}><boxGeometry args={[0.05, 0.05, 0.04]} />{glow}</mesh>
+      </group>
+      <group ref={aura} position={[0, 1.0, 0]} visible={false}>
+        <mesh ref={auraM} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.78, 0.035, 6, 28]} /><meshBasicMaterial color="#ffb020" toneMapped={false} transparent opacity={0.9} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
       </group>
     </group>
   );
@@ -963,6 +1200,7 @@ function Player() {
   const slideT = useRef(0), slideCd = useRef(0), duck = useRef(0), padCd = useRef(0), summitCd = useRef(0);
   const dashT = useRef(0), dashDX = useRef(0), dashDZ = useRef(0);
   const reloadDur = useRef(RELOAD_TIME), netT = useRef(0);
+  const lastWave = useRef(1), streakIdx = useRef(0), fovBoost = useRef(0), bufSent = useRef(-1), fireSeq = useRef(0);
 
   const controller = useMemo(() => {
     const c = world.createCharacterController(0.02);
@@ -1076,6 +1314,7 @@ function Player() {
     recoil.current = 0; recoilSide.current = 0;
     adsT.current = 0; flashT.current = 0;
     fireCd.current = 0; dashCd.current = 0; reloadT.current = 0; comboTimer.current = 0;
+    lastWave.current = 1; streakIdx.current = 0; bufSent.current = -1; fovBoost.current = 0;
     reloadPhase.current = 0; chargeGlow.current = 0;
     resetInput();
 
@@ -1087,9 +1326,9 @@ function Player() {
 
   const startReload = () => {
     const g = useGame.getState();
-    if (g.status !== 'PLAYING' || g.reloading || g.ammo >= g.magSize) return;
+    if (g.status !== 'PLAYING' || g.reloading || g.ammo >= g.magSize || buffs.overdrive > 0) return;
     g.setReloading(true);
-    reloadDur.current = WEAPONS[g.activeWeapon].reload || RELOAD_TIME;
+    reloadDur.current = (WEAPONS[g.activeWeapon].reload || RELOAD_TIME) / playerState.mods.reload;
     reloadT.current = reloadDur.current;
     reloadPhase.current = 0;
     sfx('reload');
@@ -1098,12 +1337,12 @@ function Player() {
   const fire = () => {
     const g = useGame.getState();
     if (g.status !== 'PLAYING' || g.reloading) return;
-    if (g.ammo <= 0) { startReload(); return; }
-    g.consumeAmmo();
+    if (g.ammo <= 0 && buffs.overdrive <= 0) { startReload(); return; }
+    if (buffs.overdrive <= 0) g.consumeAmmo();          // Overdrive = infinite ammo
 
     const wpn = WEAPONS[g.activeWeapon];
 
-    const kk = wpn.kick ?? 1;
+    const kk = (wpn.kick ?? 1) / Math.sqrt(playerState.mods.fire);   // tame recoil when firing fast so it stays readable
     recoil.current = Math.min(1.6, recoil.current + 0.9 * kk);
     recoilSide.current = -recoilSide.current + (Math.random() - 0.5) * 0.35 * kk;
     camKick.current += 0.012 * kk;
@@ -1112,12 +1351,12 @@ function Player() {
     chargeGlow.current = 1;
     screenFX.fovKick = 1.6 * kk;
     addShake(0.032 * kk);
-    if (!wpn.beam) sfx('shot' + g.activeWeapon);
+    if (!wpn.beam && (playerState.mods.fire < 1.6 || (fireSeq.current++ & 1) === 0)) sfx('shot' + g.activeWeapon);
 
     if (muzzleRef.current) muzzleRef.current.getWorldPosition(_muzzle);
     else _muzzle.copy(camera.position);
 
-    const dealt = new Map(), quiet = !!wpn.beam && (beamTick++ % 6 !== 0);
+    const dealt = new Map(), quiet = !!wpn.beam && (beamTick++ % 6 !== 0), dm = playerState.mods.dmg;
     for (let i = 0; i < wpn.projectiles; i++) {
       _origin.copy(camera.position);
       _dir.set(0, 0, -1).applyQuaternion(camera.quaternion);
@@ -1139,12 +1378,12 @@ function Player() {
         for (const h of eh) {
           const pt = { x: _origin.x + _dir.x * h.t, y: _origin.y + _dir.y * h.t, z: _origin.z + _dir.z * h.t };
           const cur = dealt.get(h.id);
-          if (cur) cur.dmg += wpn.damage; else dealt.set(h.id, { dmg: wpn.damage, pt });
+          if (cur) cur.dmg += wpn.damage * dm; else dealt.set(h.id, { dmg: wpn.damage * dm, pt });
         }
       }
       _end.copy(_origin).addScaledVector(_dir, endT);
       if (!eh.length && rh && (!wpn.beam || Math.random() < 0.3)) g.addExplosion([_end.x, _end.y, _end.z], wpn.beam ? '#ffffff' : '#4fd8ff', 0.22, false);
-      g.addTracer([_muzzle.x, _muzzle.y, _muzzle.z], [_end.x, _end.y, _end.z], wpn.beam);
+      g.addTracer([_muzzle.x, _muzzle.y, _muzzle.z], [_end.x, _end.y, _end.z], wpn.beam, buffs.overdrive > 0);
     }
     dealt.forEach((v, id) => dealDamage(id, v.dmg, v.pt, quiet));
     if (wpn.push) {   // shotgun blast shoves you back (aim down to launch yourself)
@@ -1161,6 +1400,32 @@ function Player() {
 
     const playing = g.status === 'PLAYING';
     const me = myPlayer();
+
+    /* ---- v7: time scale, perks, streak boosts, buffs ---- */
+    const sdt = dt * timeFX.me;                                   // simulation time: slowed while someone else's Time Warp is active
+    const pk = perksFor(g.wave), st = streakTier(g.combo), od = buffs.overdrive > 0, mods = playerState.mods;
+    mods.fire = (od ? 2 : 1) * st.fire;
+    mods.dmg = pk.dmg * st.dmg;
+    mods.speed = (od ? 1.12 : 1) * st.speed;
+    mods.reload = pk.reload * (od ? 3 : 1);
+    mods.dashCd = pk.dashCd * (od ? 0.6 : 1) * (st.idx >= 3 ? 0.65 : 1);
+    playerState.magnet = pk.magnet;
+    flushHits();
+    if (playing) {
+      if (buffs.overdrive > 0) buffs.overdrive = Math.max(0, buffs.overdrive - dt);
+      if (buffs.shield > 0) { buffs.shield = Math.max(0, buffs.shield - dt); if (buffs.shield === 0 && g.shield > 0) useGame.setState({ shield: 0 }); }
+      if (g.maxHealth !== pk.maxHp) useGame.setState((s) => ({ maxHealth: pk.maxHp, health: Math.min(pk.maxHp, s.health + Math.max(0, pk.maxHp - s.maxHealth)) }));
+      if (g.wave !== lastWave.current) {
+        const prevW = lastWave.current; lastWave.current = g.wave;
+        if (g.wave - prevW === 1) {      // joining mid-run jumps several waves at once: stay silent then
+          g.heal(30); sfx('streak');
+          g.notify('SYSTEM UPGRADE', g.wave - 1 <= 14 ? '+6 INTEGRITY  +4% DAMAGE  +5% RELOAD  FASTER DASH' : 'SYSTEMS AT PEAK', '#35e6ff');
+        }
+      }
+      if (od && g.reloading) { reloadT.current = 0; useGame.setState({ reloading: false, ammo: g.magSize }); }
+      const flags = (od ? 1 : 0) | (buffs.shield > 0 ? 2 : 0);
+      if (me && flags !== bufSent.current) { bufSent.current = flags; me.setState('buf', flags, true); }
+    }
 
     if (me && playing) {
       const hit = me.getState('lastHit');
@@ -1200,12 +1465,12 @@ function Player() {
     const fwdX = -sinY, fwdZ = -cosY;
     const rgtX = cosY, rgtZ = -sinY;
 
-    dashCd.current = Math.max(0, dashCd.current - dt);
+    dashCd.current = Math.max(0, dashCd.current - sdt);
 
     if (keys.dash && dashCd.current === 0 && playing) {
       dashDX.current = (mag > 0) ? (fwdX * -iz + rgtX * ix) : fwdX;
       dashDZ.current = (mag > 0) ? (fwdZ * -iz + rgtZ * ix) : fwdZ;
-      dashT.current = 0.2; dashCd.current = 1.0; slideT.current = 0;
+      dashT.current = 0.2; dashCd.current = mods.dashCd; slideT.current = 0;
       screenFX.fovKick = 24; screenFX.chroma = Math.min(1.5, screenFX.chroma + 0.9); addShake(0.3);
       g.addExplosion([camera.position.x, camera.position.y - 0.7, camera.position.z], '#35e6ff', 1.3, true);
       sfx('dash');
@@ -1213,15 +1478,15 @@ function Player() {
     const dashing = dashT.current > 0 && playing;
     playerState.invuln = dashing;           // i-frames while dashing
     if (dashing) {
-      dashT.current -= dt;
+      dashT.current -= sdt;
       velX.current = dashDX.current * 40;   // ~8m burst, ignores gravity
       velZ.current = dashDZ.current * 40;
       velY.current = Math.max(velY.current, 0) * 0.5;
     }
 
-    let currentSpeed = WALK_SPEED * (keys.sprint ? SPRINT_MULT : 1) * THREE.MathUtils.lerp(1, ADS_SPEED_MULT, adsT.current);
+    let currentSpeed = WALK_SPEED * (keys.sprint ? SPRINT_MULT : 1) * THREE.MathUtils.lerp(1, ADS_SPEED_MULT, adsT.current) * mods.speed;
     let accel = grounded.current ? 15 : 4;
-    slideCd.current = Math.max(0, slideCd.current - dt);
+    slideCd.current = Math.max(0, slideCd.current - sdt);
     if (keys.slidePress) {
       keys.slidePress = false;
       const hs = Math.hypot(velX.current, velZ.current);
@@ -1233,8 +1498,8 @@ function Player() {
     }
     const sliding = slideT.current > 0 && playing;
     if (sliding) {
-      slideT.current -= dt;
-      const dec = Math.exp(-1.1 * dt);       // glide, bleeding speed
+      slideT.current -= sdt;
+      const dec = Math.exp(-1.1 * sdt);       // glide, bleeding speed
       velX.current *= dec; velZ.current *= dec;
       accel = 0;                              // no braking while sliding; jump keeps the momentum
     }
@@ -1245,14 +1510,14 @@ function Player() {
     const wishZ = (fwdZ * -iz + rgtZ * ix) * currentSpeed;
 
     if (!dashing) {
-      velX.current = THREE.MathUtils.damp(velX.current, wishX, accel, dt);
-      velZ.current = THREE.MathUtils.damp(velZ.current, wishZ, accel, dt);
+      velX.current = THREE.MathUtils.damp(velX.current, wishX, accel, sdt);
+      velZ.current = THREE.MathUtils.damp(velZ.current, wishZ, accel, sdt);
     }
 
     if (keys.jump && playing) jumpBuffer.current = 0.14;
     jumpBuffer.current = Math.max(0, jumpBuffer.current - dt);
 
-    if (!dashing) velY.current += GRAVITY * dt;
+    if (!dashing) velY.current += GRAVITY * sdt;
     if (grounded.current && velY.current < 0) velY.current = -1.5;
     if (jumpBuffer.current > 0 && grounded.current) {
       velY.current = JUMP_VELOCITY;
@@ -1260,7 +1525,7 @@ function Player() {
       grounded.current = false;
     }
 
-    padCd.current -= dt;
+    padCd.current -= sdt;
     if (playing && padCd.current <= 0) {
       const bt = body.translation();
       for (const p of JUMP_PADS) if (Math.hypot(bt.x - p[0], bt.z - p[2]) < 1.5 && bt.y < 1.8) {
@@ -1268,9 +1533,9 @@ function Player() {
       }
     }
     controller.computeColliderMovement(collider, {
-      x: velX.current * dt,
-      y: velY.current * dt,
-      z: velZ.current * dt,
+      x: velX.current * sdt,
+      y: velY.current * sdt,
+      z: velZ.current * sdt,
     });
     const mv = controller.computedMovement();
     grounded.current = controller.computedGrounded();
@@ -1287,7 +1552,7 @@ function Player() {
     const ny = t.y + mv.y;
     const nz = t.z + mv.z;
     body.setNextKinematicTranslation({ x: nx, y: ny, z: nz });
-    summitCd.current -= dt;
+    summitCd.current -= sdt;
     if (playing && summitCd.current <= 0 && Math.abs(nx - SUMMIT.c[0]) < SUMMIT.h[0] && Math.abs(nz - SUMMIT.c[1]) < SUMMIT.h[1] && ny - 0.9 > SUMMIT.top - 0.4) {
       summitCd.current = 40; g.heal(60);
       useGame.setState((s) => ({ score: s.score + 500, ammo: s.magSize }));
@@ -1326,7 +1591,8 @@ function Player() {
     }
 
     adsT.current = THREE.MathUtils.damp(adsT.current, g.ads ? 1 : 0, 13, dt);
-    const targetFov = THREE.MathUtils.lerp(S().fov, S().fov * 0.7, adsT.current) + screenFX.fovKick;
+    fovBoost.current = THREE.MathUtils.damp(fovBoost.current, (od ? 7 : 0) + st.idx * 1.5, 6, dt);
+    const targetFov = THREE.MathUtils.lerp(S().fov, S().fov * 0.7, adsT.current) + screenFX.fovKick + fovBoost.current * (1 - adsT.current);
     if (Math.abs(camera.fov - targetFov) > 0.01) {
       camera.fov = targetFov;
       camera.updateProjectionMatrix();
@@ -1389,16 +1655,19 @@ function Player() {
     if (muzzleRef.current) muzzleRef.current.position.z = mz;
     if (flashRef.current) flashRef.current.position.z = mz - 0.04;
     beamSound(playing && mouse.left && !g.reloading && g.ammo > 0 && !!WEAPONS[g.activeWeapon].beam);
-    fireCd.current -= dt;
-    if (playing && mouse.left && !g.reloading && fireCd.current <= 0) {
-      const wpn = WEAPONS[g.activeWeapon];
-      fire();
-      fireCd.current = wpn.interval;
+    fireCd.current -= sdt;
+    {
+      const iv = WEAPONS[g.activeWeapon].interval / mods.fire;
+      let guard = 0;
+      while (playing && mouse.left && !useGame.getState().reloading && fireCd.current <= 0 && guard++ < 3) {
+        fire();
+        fireCd.current += iv;
+      }
+      if (fireCd.current < -0.03) fireCd.current = -0.03;   // bank at most one early shot
     }
-    if (fireCd.current < -1) fireCd.current = 0;
 
     if (reloadT.current > 0) {
-      reloadT.current -= dt;
+      reloadT.current -= sdt;
       if (reloadT.current <= 0) {
         reloadT.current = 0;
         useGame.getState().finishReload();
@@ -1418,25 +1687,40 @@ function Player() {
         );
         flashRef.current.rotation.z = v * Math.PI * 2;
         flashRef.current.material.opacity = k;
+        flashRef.current.material.color.setHex(od ? 0xffb020 : 0xb6f6ff);
       }
-      if (flashLightRef.current) flashLightRef.current.intensity = k * 14;
+      if (flashLightRef.current) { flashLightRef.current.intensity = k * 14; flashLightRef.current.color.setHex(od ? 0xffb020 : 0x7fe9ff); }
     } else {
       if (flashRef.current) flashRef.current.visible = false;
       if (flashLightRef.current) flashLightRef.current.intensity = 0;
     }
 
     if (playing && g.combo > 0) {
-      comboTimer.current -= dt;
+      comboTimer.current -= sdt;          // slowed players don't lose their streak just because the world is slow
+      playerState.comboT = comboTimer.current; playerState.comboMax = comboTimeout(g.combo);
       if (comboTimer.current <= 0) {
         g.resetCombo();
         comboTimer.current = 0;
       }
-    }
+    } else playerState.comboT = 0;
   }, -1);
 
   const comboValue = useGame((s) => s.combo);
   useEffect(() => {
-    if (comboValue > 0) comboTimer.current = COMBO_TIMEOUT;
+    if (comboValue > 0) comboTimer.current = comboTimeout(comboValue);
+    if (comboValue === 0) { streakIdx.current = 0; return; }
+    const g = useGame.getState(), tier = streakTier(comboValue);
+    if (g.status !== 'PLAYING') return;
+    if (tier.idx > streakIdx.current) {      // streak tier reached: instant reward on top of the passive boosts
+      streakIdx.current = tier.idx;
+      g.heal(10 + tier.idx * 5); useGame.setState((s) => (s.reloading ? {} : { ammo: s.magSize }));
+      g.notify(tier.name, `STREAK ×${comboValue}  ·  +${Math.round((tier.fire - 1) * 100)}% FIRE RATE`, tier.color);
+      sfx('streak'); screenFX.fovKick = 10; addShake(0.15);
+    }
+    if (comboValue % 25 === 0) {             // every 25 kills the streak detonates a free Nova
+      triggerNova(playerState.position);
+      g.notify('STREAK NOVA', `${comboValue} KILLS WITHOUT STOPPING`, '#ff3355');
+    }
   }, [comboValue]);
 
   return (
@@ -1557,12 +1841,13 @@ function EnemyVisual({ type, innerRef, wireRef, coreMatRef }) {
 function Enemy({ data }) {            // HOST ONLY: real physics + AI
   const bodyRef = useRef(null), innerRef = useRef(null), wireRef = useRef(null), coreMatRef = useRef(null);
   const hp = useRef(data.hp), dead = useRef(false), dying = useRef(0), hitFlash = useRef(0), lastBy = useRef(null);
-  const knock = useRef(new THREE.Vector3()), phase = useRef(Math.random() * Math.PI * 2);
+  const knock = useRef(new THREE.Vector3()), phase = useRef(Math.random() * Math.PI * 2), tClock = useRef(0);
   const def = ENEMY_DEFS[data.type];
 
   useFrame((state, rawDt) => {
     const dt = Math.min(rawDt, 1 / 30), body = bodyRef.current;
     if (!body) return;
+    const W = timeFX.world, wdt = dt * W;          // Time Warp: enemies run on the world clock
     const g = useGame.getState(), t = body.translation();
     const view = { id: data.id, x: t.x, y: t.y, z: t.z, r: def.size * 1.05 + 0.2, t: ENEMY_TYPES.indexOf(data.type), dy: dying.current > 0 ? 1 : 0 };
     enemyView.set(data.id, view);
@@ -1599,17 +1884,17 @@ function Enemy({ data }) {            // HOST ONLY: real physics + AI
 
     if (!best) { body.setLinvel({ x: 0, y: 0, z: 0 }, true); }
     else {
-      const dx = best.x - t.x, dy = best.y - t.y, dz = best.z - t.z, dist = Math.max(1e-3, bd), inv = 1 / dist, ct = state.clock.elapsedTime;
+      const dx = best.x - t.x, dy = best.y - t.y, dz = best.z - t.z, dist = Math.max(1e-3, bd), inv = 1 / dist, ct = (tClock.current += wdt);
       let wishX = dx * inv, wishY = dy * inv, wishZ = dz * inv, speedMult = 1;
       if (data.type === 'drone') wishY += Math.sin(ct * 4 + phase.current) * 0.35;
       else if (data.type === 'wraith') { const perp = Math.sin(ct * 2.4 + phase.current); wishX += -dz * inv * perp * 0.75; wishZ += dx * inv * perp * 0.75; if (dist < 9) speedMult = 1.35; }
       else if (data.type === 'brute') { if (dist < 8) speedMult = 1.9; wishY += Math.sin(ct * 2.6 + phase.current) * 0.15; }
-      knock.current.multiplyScalar(0.86);
+      knock.current.multiplyScalar(Math.pow(0.86, W));
       const speed = data.speed * speedMult;
-      body.setLinvel({ x: wishX * speed + knock.current.x, y: wishY * speed + knock.current.y, z: wishZ * speed + knock.current.z }, true);
+      body.setLinvel({ x: (wishX * speed + knock.current.x) * W, y: (wishY * speed + knock.current.y) * W, z: (wishZ * speed + knock.current.z) * W }, true);
       if (innerRef.current) {
         const spin = data.type === 'brute' || data.type === 'titan' ? 0.6 : data.type === 'wraith' ? 3.2 : 2.4;
-        innerRef.current.rotation.x += dt * spin; innerRef.current.rotation.y += dt * spin * 0.7; innerRef.current.rotation.z += dt * spin * 0.4;
+        innerRef.current.rotation.x += wdt * spin; innerRef.current.rotation.y += wdt * spin * 0.7; innerRef.current.rotation.z += wdt * spin * 0.4;
       }
       if (dist < ENEMY_TOUCH_RADIUS + (def.size - 0.5) * 0.8) {
         if (best.id === 'me') g.damagePlayer(data.damage); else hurtRemote(best.id, data.damage);
@@ -1656,7 +1941,7 @@ function Ghost({ id, type }) {        // CLIENT: visual only, follows host snaps
     r.position.x += (o.tx - r.position.x) * k; r.position.y += (o.ty - r.position.y) * k; r.position.z += (o.tz - r.position.z) * k;
     enemyView.set(id, { id, x: r.position.x, y: r.position.y, z: r.position.z, r: def.size * 1.05 + 0.2, t: ENEMY_TYPES.indexOf(type), dy: o.dy });
     const spin = type === 'brute' || type === 'titan' ? 0.6 : type === 'wraith' ? 3.2 : 2.4;
-    if (inner.current) { inner.current.rotation.x += dt * spin; inner.current.rotation.y += dt * spin * 0.7; }
+    if (inner.current) { const wd = dt * timeFX.world; inner.current.rotation.x += wd * spin; inner.current.rotation.y += wd * spin * 0.7; }
     o.flash = Math.max(0, (o.flash || 0) - dt * 4.2);
     if (core.current) { core.current.emissiveIntensity = 4.5 + o.flash * 6; if (o.flash > 0.05) core.current.emissive.setRGB(1, 1, 1); else core.current.emissive.setStyle(def.emissive); }
     if (o.dy) {
@@ -1717,6 +2002,7 @@ function EnemyManager() {
   const players = usePlayersList();
   const spawnAcc = useRef(0), waveAcc = useRef(0), snapAcc = useRef(0);
   const pkKey = useRef(''), seenKill = useRef(null), seenDmg = useRef(null), seenHit = useRef(new Map());
+  const wasHost = useRef(false), pruneAcc = useRef(0);
   const prevStatus = useRef('MENU');
 
   useEffect(() => {
@@ -1733,7 +2019,7 @@ function EnemyManager() {
   }, [status]);
 
   useFrame((_, rawDt) => {
-    const dt = Math.min(rawDt, 1 / 30), g = useGame.getState(), me = myPlayer(), mid = myId(), host = safeIsHost();
+    const dt = Math.min(rawDt, 1 / 30), g = useGame.getState(), me = myPlayer(), mid = myId(), host = safeIsHost(), wdt = dt * timeFX.world;
     window.__mpCount = players.length;
     const solo = players.length <= 1;
 
@@ -1766,13 +2052,20 @@ function EnemyManager() {
     const pk = getState('pk') || [], k = pk.map((p) => p.id).join(',');
     if (k !== pkKey.current) { pkKey.current = k; useGame.setState({ pickups: pk.map((p) => ({ id: p.id, ph: p.ph, position: [p.x, p.y, p.z], type: p.type })) }); }
 
-    if (!host) return;
+    if (!host) { wasHost.current = false; return; }
+    if (!wasHost.current) {          // just became host (or the old host left): adopt shared state so counters/ids stay monotonic
+      wasHost.current = true;
+      const kl0 = getState('kl'); if (Array.isArray(kl0) && kl0.length) { killLog = kl0.slice(-12); killSeq = Math.max(killSeq, ...kl0.map((e) => e.n || 0)); }
+      const pk0 = getState('pk'); if (Array.isArray(pk0)) pkList = pk0.slice(-20);
+    }
 
-    // apply hits sent by other players
+    // apply hits sent by other players (history present at first sight is skipped, never replayed)
     for (const p of players) {
       if (me && p.id === me.id) continue;
-      const hits = p.getState('hits') || [], seen = seenHit.current.get(p.id) || 0;
-      for (const h of hits) if (h.n > seen && h.n > Date.now() - 4000) enemyHandlers.get(h.id)?.(h.d, { x: h.x, y: h.y, z: h.z }, p.id, false);
+      const hits = p.getState('hits') || [];
+      if (!seenHit.current.has(p.id)) { seenHit.current.set(p.id, hits.length ? hits[hits.length - 1].n : 0); continue; }
+      const seen = seenHit.current.get(p.id);
+      for (const h of hits) if (h.n > seen) enemyHandlers.get(h.id)?.(h.d, { x: h.x, y: h.y, z: h.z }, p.id, false);
       if (hits.length) seenHit.current.set(p.id, Math.max(seen, hits[hits.length - 1].n));
     }
 
@@ -1780,13 +2073,14 @@ function EnemyManager() {
     const active = (meLive || remoteLive.size > 0) && !(solo && g.status !== 'PLAYING');
     if (active) {
       const pc = Math.max(1, remoteLive.size + (meLive ? 1 : 0));
-      waveAcc.current += dt;
+      waveAcc.current += wdt;            // wave + spawn timers run on the world clock, so Time Warp pauses the pressure too
       if (waveAcc.current >= WAVE_DURATION) {
         waveAcc.current -= WAVE_DURATION; g.nextWave();
         const w = useGame.getState().wave; safeSet('wave', w); sfx('wave');
         if (w % 5 === 0) g.spawnEnemy(randomEdgeSpawn(), 'titan', enemyStats('titan', w));   // boss wave
+        supplyDrop();                                                                       // every wave: a power-up + health crate
       }
-      spawnAcc.current += dt;
+      spawnAcc.current += wdt;
       const wv = useGame.getState().wave;
       const interval = Math.max(SPAWN_MIN_INTERVAL, 1.5 - (wv - 1) * 0.075) / (1 + 0.4 * (pc - 1));
       const maxAlive = Math.min(MAX_ENEMIES + 8 * (pc - 1), 6 + Math.floor((wv - 1) * 1.5) + 4 * (pc - 1));
@@ -1794,6 +2088,14 @@ function EnemyManager() {
         spawnAcc.current = 0;
         if (useGame.getState().enemies.length < maxAlive) { const type = pickEnemyType(wv); g.spawnEnemy(randomEdgeSpawn(), type, enemyStats(type, wv)); }
       }
+    }
+
+    pruneAcc.current += dt;            // expire old loot and anything already collected
+    if (pruneAcc.current >= 1) {
+      pruneAcc.current = 0;
+      const now = Date.now();
+      const keep = pkList.filter((p) => !collected.has(p.id) && now - (p.born || now) < (PICKUP_TTL[p.type] || 20) * 1000);
+      if (keep.length !== pkList.length) { pkList = keep; safeSet('pk', pkList); }
     }
 
     snapAcc.current += dt;
@@ -1812,53 +2114,66 @@ function EnemyManager() {
  *  PICKUPS
  * ================================================================== */
 function Pickup({ data }) {
-  const groupRef = useRef(null);
-  const collected = useRef(false);
-  const def = PICKUP_DEFS[data.type];
+  const groupRef = useRef(null), spinRef = useRef(null);
+  const collected = useRef(false), tAcc = useRef(Math.random() * 6);
+  const pos = useRef({ x: data.position[0], y: data.position[1], z: data.position[2] });
+  const def = PICKUP_DEFS[data.type] || PICKUP_DEFS.ammo, power = !!def.power;
 
-  useFrame((state) => {
+  useFrame((state, rawDt) => {
     if (collected.current) return;
-    
+
     if (window.collectedPickups?.has(data.id)) {
-       collected.current = true;
-       useGame.getState().removePickup(data.id);
-       return;
+      collected.current = true;
+      useGame.getState().removePickup(data.id);
+      return;
     }
 
-    const t = state.clock.elapsedTime;
-    if (groupRef.current) {
-      groupRef.current.rotation.y = t * 1.8;
-      groupRef.current.rotation.x = Math.sin(t * 1.3) * 0.4;
-      groupRef.current.position.y = data.position[1] + Math.sin(t * 3 + (data.ph || 0)) * 0.14;
+    const dt = Math.min(rawDt, 0.05);
+    tAcc.current += dt * timeFX.world;                 // loot drifts on the world clock too
+    const t = tAcc.current, P = pos.current;
+    const live = playerState.alive && useGame.getState().status === 'PLAYING';   // dead / menu players can't grab loot
+    const dx = playerState.position.x - P.x, dy = playerState.position.y - P.y, dz = playerState.position.z - P.z;
+    const d2 = dx * dx + dy * dy + dz * dz;
+
+    if (live) {                                        // magnet: loot slides toward you, faster the closer you are
+      const mag = playerState.magnet;
+      if (d2 < mag * mag && d2 > 1e-4) {
+        const d = Math.sqrt(d2), k = 1 - d / mag, step = Math.min(d, (5 + 26 * k * k) * dt);
+        P.x += (dx / d) * step; P.y += (dy / d) * step; P.z += (dz / d) * step;
+      }
     }
-    const p = data.position;
-    const dx = playerState.position.x - p[0];
-    const dy = playerState.position.y - p[1];
-    const dz = playerState.position.z - p[2];
-    
-    if (dx * dx + dy * dy + dz * dz < 1.8 * 1.8) {
+    if (groupRef.current) groupRef.current.position.set(P.x, P.y + Math.sin(t * 3 + (data.ph || 0)) * 0.14, P.z);
+    if (spinRef.current) { spinRef.current.rotation.y = t * 1.8; spinRef.current.rotation.x = Math.sin(t * 1.3) * 0.4; }
+
+    if (live && d2 < 1.5 * 1.5) {
       collected.current = true;
       const me = myPlayer();
       if (me) me.setState('pickups', [...(me.getState('pickups') || []).slice(-60), data.id], true);
+      applyPickup(data.type);
       const g = useGame.getState();
-      if (data.type === 'health') g.heal(def.amount);
-      else g.giveAmmo(def.amount);
-      g.showPickupToast(def.label, data.type); sfx('pickup');
-      g.addExplosion([p[0], p[1], p[2]], def.color, 0.5, false);
+      g.addExplosion([P.x, P.y, P.z], def.color, power ? 0.9 : 0.5, power);
       g.removePickup(data.id);
     }
   });
 
   return (
     <group ref={groupRef} position={data.position}>
-      <mesh>
-        <octahedronGeometry args={[0.32, 0]} />
-        <meshBasicMaterial color={def.color} toneMapped={false} />
-      </mesh>
-      <mesh scale={1.4}>
-        <octahedronGeometry args={[0.32, 0]} />
-        <meshBasicMaterial color={def.wire} wireframe toneMapped={false} transparent opacity={0.9} />
-      </mesh>
+      <group ref={spinRef}>
+        <mesh scale={power ? 1.45 : 1}>
+          {power ? <icosahedronGeometry args={[0.32, 0]} /> : <octahedronGeometry args={[0.32, 0]} />}
+          <meshBasicMaterial color={def.color} toneMapped={false} />
+        </mesh>
+        <mesh scale={power ? 2.0 : 1.4}>
+          {power ? <icosahedronGeometry args={[0.32, 0]} /> : <octahedronGeometry args={[0.32, 0]} />}
+          <meshBasicMaterial color={def.wire} wireframe toneMapped={false} transparent opacity={0.9} />
+        </mesh>
+      </group>
+      {power && (
+        <>
+          <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.85, 0.025, 6, 28]} /><meshBasicMaterial color={def.color} transparent opacity={0.8} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+          <mesh position={[0, 3, 0]}><cylinderGeometry args={[0.04, 0.04, 6, 6]} /><meshBasicMaterial color={def.color} transparent opacity={0.35} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+        </>
+      )}
     </group>
   );
 }
@@ -1996,7 +2311,7 @@ function Tracer({ data }) {
       {segs.map((s, i) => (
         <group key={i} position={s.mid} quaternion={s.quat}>
           <mesh frustumCulled={false}><boxGeometry args={[0.035, 0.035, s.len]} /><meshBasicMaterial color="#ffffff" toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
-          <mesh frustumCulled={false}><boxGeometry args={[0.15, 0.15, s.len]} /><meshBasicMaterial color="#5ce6ff" transparent opacity={0.45} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+          <mesh frustumCulled={false}><boxGeometry args={[0.15, 0.15, s.len]} /><meshBasicMaterial color={data.hot ? '#ffb020' : '#5ce6ff'} transparent opacity={0.45} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
         </group>
       ))}
     </group>
@@ -2009,7 +2324,7 @@ function Tracer({ data }) {
       </mesh>
       <mesh ref={glowRef} frustumCulled={false}>
         <boxGeometry args={[0.09, 0.09, length]} />
-        <meshBasicMaterial color="#5ce6ff" transparent opacity={0.55} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
+        <meshBasicMaterial color={data.hot ? '#ffb020' : '#5ce6ff'} transparent opacity={0.55} toneMapped={false} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
     </group>
   );
@@ -2117,14 +2432,29 @@ function HitMarker({ marker }) {
   );
 }
 
+function useTick(ms) {
+  const [, setT] = useState(0);
+  useEffect(() => { const id = setInterval(() => setT((t) => (t + 1) % 1000000), ms); return () => clearInterval(id); }, [ms]);
+}
+
+function StreakBar() {
+  useTick(60);
+  const f = Math.max(0, Math.min(1, playerState.comboT / Math.max(0.1, playerState.comboMax)));
+  return <div className="tb"><i style={{ width: f * 100 + '%' }} /></div>;
+}
+
 function ComboMeter() {
   const combo = useGame((s) => s.combo);
   const tier = useGame((s) => s.comboTier);
   if (combo < 2) return null;
+  const st = streakTier(combo);
   const tierClass = tier >= 4 ? 'tier-4' : tier >= 3 ? 'tier-3' : tier >= 2 ? 'tier-2' : '';
+  const perk = st.name ? `${st.name} · +${Math.round((st.fire - 1) * 100)}% FIRE RATE` + (st.dmg > 1 ? ` · +${Math.round((st.dmg - 1) * 100)}% DMG` : '') : '';
   return (
     <div key={combo} className={'combo ' + tierClass}>
       ×{tier.toFixed(tier === 1.5 ? 1 : 0)}<span>{combo} STREAK</span>
+      {perk && <div className="perk">{perk}</div>}
+      <StreakBar />
     </div>
   );
 }
@@ -2132,16 +2462,61 @@ function ComboMeter() {
 function StreakFlash() {
   const flash = useGame((s) => s.streakFlash);
   if (!flash) return null;
-  const label = flash.value >= 20 ? 'UNSTOPPABLE' : flash.value >= 10 ? 'RAMPAGE' : 'KILLSTREAK';
-  return <div key={flash.id} className="streak-flash">{label}</div>;
+  return <div key={flash.id} className="streak-flash">{(streakTier(flash.value).name || 'KILLSTREAK') + ' ×' + flash.value}</div>;
 }
 
 function PickupToast() {
   const toast = useGame((s) => s.pickupToast);
   if (!toast) return null;
+  const style = toast.color ? { color: toast.color, textShadow: `0 0 14px ${toast.color}` } : undefined;
   return (
-    <div key={toast.id} className={'pickup-toast' + (toast.kind === 'ammo' ? ' ammo' : '')}>
+    <div key={toast.id} className={'pickup-toast' + (toast.kind === 'ammo' ? ' ammo' : '')} style={style}>
       {toast.label}
+    </div>
+  );
+}
+
+function NotifyBanner() {
+  const n = useGame((s) => s.notice);
+  if (!n) return null;
+  return <div key={n.id} className="notify" style={{ '--nc': n.color }}><b>{n.text}</b><span>{n.sub}</span></div>;
+}
+
+function BuffBar() {
+  useTick(80);
+  const combo = useGame((s) => s.combo);
+  const items = [];
+  if (buffs.overdrive > 0) items.push({ k: 'od', label: 'OVERDRIVE', c: '#ffb020', v: buffs.overdrive / Math.max(OVERDRIVE_DURATION, buffs.overdrive), t: buffs.overdrive });
+  if (buffs.shield > 0) items.push({ k: 'sh', label: 'AEGIS', c: '#4d9bff', v: buffs.shield / SHIELD_DURATION, t: buffs.shield });
+  const wr = timeFX.warps.get(myId());
+  if (wr > 0) items.push({ k: 'wp', label: 'TIME WARP', c: '#b06bff', v: wr / WARP_DURATION, t: wr });
+  const st = streakTier(combo);
+  if (st.idx > 0) items.push({ k: 'st', label: st.name, c: st.color, v: playerState.comboT / Math.max(0.1, playerState.comboMax), t: null });
+  return (
+    <>
+      {buffs.overdrive > 0 && <div className="od-overlay" />}
+      {items.length > 0 && (
+        <div className="buffs">
+          {items.map((b) => (
+            <div key={b.k} className="buff" style={{ '--bc': b.c }}>
+              <div className="bt"><span>{b.label}</span>{b.t !== null && <span>{b.t.toFixed(1)}s</span>}</div>
+              <div className="bar"><i style={{ width: Math.max(0, Math.min(1, b.v)) * 100 + '%' }} /></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function WarpOverlay() {
+  useTick(100);
+  if (!timeFX.warps.size) return null;
+  const mine = timeFX.warps.has(myId());
+  const owner = [...timeFX.warps.keys()][0];
+  return (
+    <div className={'warp-overlay' + (mine ? '' : ' slowed')}>
+      <div className="wl">{mine ? 'TIME WARP // THE WORLD CRAWLS' : 'TIME DILATION // ' + (timeFX.names.get(owner) || 'PLAYER')}</div>
     </div>
   );
 }
@@ -2163,6 +2538,7 @@ function KillFeed() {
 function Hud({ fps }) {
   const health = useGame((s) => s.health);
   const maxHealth = useGame((s) => s.maxHealth);
+  const shield = useGame((s) => s.shield);
   const activeWeapon = useGame((s) => s.activeWeapon);
   const ammo = useGame((s) => s.ammo);
   const reloading = useGame((s) => s.reloading);
@@ -2198,6 +2574,9 @@ function Hud({ fps }) {
       <ComboMeter />
       <StreakFlash />
       <PickupToast />
+      <NotifyBanner />
+      <WarpOverlay />
+      <BuffBar />
       <KillFeed />
       {showFps && fps > 0 && <div className="fps-meter">{fps} FPS</div>}
 
@@ -2213,14 +2592,15 @@ function Hud({ fps }) {
       </div>
 
       <div className={'health' + (low ? ' low' : '')}>
-        <div className="label">INTEGRITY</div>
+        <div className="label">INTEGRITY{shield > 0 ? <span className="sh">  + AEGIS {Math.ceil(shield)}</span> : null}</div>
+        {shield > 0 && <div className="shield"><i style={{ width: Math.min(100, (shield / SHIELD_AMOUNT) * 100) + '%' }} /></div>}
         <div className="track"><div className="fill" style={{ width: hpPct + '%' }} /></div>
-        <div className="hpnum">{Math.ceil(health)}</div>
+        <div className="hpnum">{Math.ceil(health)} / {maxHealth}</div>
       </div>
 
       <div className="ammo">
-        <div className={'num' + (ammo === 0 ? ' empty' : '')}>
-          {ammo}<span className="res">/ ∞</span>
+        <div className={'num' + (ammo === 0 && buffs.overdrive <= 0 ? ' empty' : '')}>
+          {buffs.overdrive > 0 ? '∞' : ammo}<span className="res">/ ∞</span>
         </div>
         {reloading
           ? <div className="reloading">{wpn.beam ? 'RECHARGING…' : 'RELOADING…'}</div>
@@ -2229,7 +2609,7 @@ function Hud({ fps }) {
             : <div className="reloading dim">{ads ? 'ADS' : wpn.name}</div>}
       </div>
 
-      {wave > 1 && <div key={wave} className="wave-banner">WAVE {wave}</div>}
+      {wave > 1 && <div key={wave} className="wave-banner">WAVE {wave}<small>SUPPLY DROP INBOUND</small></div>}
       {damageStamp > 0 && <div key={damageStamp} className="damage-flash" />}
       {low && <div className="low-hp-vignette" />}
     </div>
@@ -2245,7 +2625,7 @@ function Menu() {
     <div className="screen menu">
       <div className="scanlines" />
       <h1 className="title">NEON<span>SWARM</span></h1>
-      <p className="tagline">ARENA SURVIVAL PROTOCOL // v1.5 MULTIPLAYER</p>
+      <p className="tagline">ARENA SURVIVAL PROTOCOL // v7 MULTIPLAYER</p>
 
       <div className="controls">
         <div><kbd>W A S D</kbd><span>MOVE</span></div>
@@ -2260,6 +2640,15 @@ function Menu() {
         <div><kbd>R</kbd><span>RELOAD</span></div>
         <div><kbd>M</kbd><span>MUTE</span></div>
         <div><kbd>ESC</kbd><span>PAUSE</span></div>
+      </div>
+
+      <div className="loot">
+        <div><b style={{ color: '#ffb020' }}>OVERDRIVE</b><span>2× fire rate, infinite ammo, 10s</span></div>
+        <div><b style={{ color: '#b06bff' }}>TIME WARP</b><span>slows the world and rivals, not you</span></div>
+        <div><b style={{ color: '#4d9bff' }}>AEGIS</b><span>60-point overshield</span></div>
+        <div><b style={{ color: '#ff3355' }}>NOVA</b><span>blast that hits everything near you</span></div>
+        <div><b style={{ color: '#35e6ff' }}>STREAKS</b><span>keep killing for fire rate, damage, healing</span></div>
+        <div><b style={{ color: '#22ff88' }}>EACH WAVE</b><span>supply drop + permanent upgrades</span></div>
       </div>
 
       <button className="btn" onClick={start}>INITIALISE</button>
@@ -2407,6 +2796,7 @@ function Game() {
         <pointLight position={[0, 16, 0]} intensity={2.6} distance={90} color="#1f7fff" />
 
         <PerfGovernor onFps={setFps} />
+        <TimeKeeper />
 
         <Suspense fallback={null}>
           <Physics gravity={[0, GRAVITY, 0]} timeStep={1 / 60} colliders="cuboid">
